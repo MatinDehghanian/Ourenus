@@ -16,9 +16,9 @@
     "disabled": "غیرفعال",
     "limited": "محدود شده"
   },
-  "support": "پشتیبانی",
-  "userPanelTitle": "پنل کاربری {brandName}",
-  "userPanelWelcome": "به پنل کاربری {brandName} خوش آمدید.",
+  "support": "آموزشها",
+  "userPanelTitle": "پنل کاربری شما",
+  "userPanelWelcome": "به پنل کاربری خوش آمدید.",
   "operatingSystems": "انتخاب سیستم عامل",
   "configuration": "افرودن به برنامه",
   "download": "دانلود",
