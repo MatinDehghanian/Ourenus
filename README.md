@@ -1,78 +1,109 @@
-# قالب اختصاصی مرزبان و مرزنشین اورانوس | Ourenus
+# قالب اختصاصی پاسارگارد، مرزبان و مرزنشین اورانوس | Ourenus
 
 ## Desktop View
 <img width="1458" alt="image" src="https://github.com/user-attachments/assets/49983ceb-fefd-4a35-a488-4202dc7bd353">
 
-
-
 ## Responsive Mobile View
 ![image](https://github.com/user-attachments/assets/9a0605e4-f339-4a79-86f5-5aadd4fee9d9)
 
-
-
-
 ---
 
-## ساخته شده توسط
+## ساخته شده با
 - **React**: Version 18
-- **Vite**: Version 5
-- **Material UI**
+- **Vite**: Version 7
+- **Material UI**: Version 6
+- **Recharts**
 
 ---
 
-## ویژگی ها
-- **اپلیکیشن ها**: لیست اپلیکیشن های قابل تغییر و توسعه
-- **اطلاعات کاربر**: اطلاعات سرویس کامل و کاربردی
-- **مدیریت کانفیگ**: دریافت لیست کانفیگ ها و دریافت بارکد هر کانفیگ
-- **دو زبانه**: پشتیبانی از زبان انگلیسی و فارسی
-- **شخصی سازی**: قابلیت شخصی سازی رنگ ها و تم 
+## ویژگی‌ها
+- 🚀 **پشتیبانی از پنل پاسارگارد، مرزبان و مرزنشین**: سازگاری کامل با معماری و API جدید پنل پاسارگارد (Pasarguard) و APIهای پیشین.
+- 📊 **نمودار پیشرفته مصرف ترافیک (Usage Chart)**:
+  - قابلیت انتخاب بازه‌های زمانی مختلف (**۲۴ ساعت گذشته، ۷ روز، ۳۰ روز، ۱۲ ماه و کل مصرف**).
+  - پشتیبانی از دو حالت نمایش گرافیکی **ناحیه‌ای (Area Chart)** و **میله‌ای (Bar Chart)**.
+  - نمایش خلاصه‌آمار هوشمند: **کل مصرف**، **میانگین مصرف** (ساعتی / روزانه / ماهانه) و **پیک مصرف** (بیشترین میزان استفاده).
+  - مدیریت هوشمند وضعیت کاربر (قفل شدن و پیام اختصاصی برای وضعیت `On-Hold` یا بدون مصرف).
+  - تشخیص خودکار نوع پنل (عدم نمایش نمودار برای پنل‌های قدیمی فاقد API لاگ مصرف).
+- 📱 **لیست اپلیکیشن‌ها**: لیست کامل و هوشمند کانفیگ‌ها و اپ‌های متناسب با سیستم‌عامل کاربر.
+- 👤 **اطلاعات دقیق کاربر و وضعیت سرویس**: نمایش زنده حجم مصرفی، حجم باقیمانده، زمان انقضا و وضعیت سرویس با رنگ‌بندی داینامیک.
+- 🔑 **مدیریت کانفیگ**: دریافت لیست کانفیگ‌ها، کپی گروهی و تولید QR Code اختصاصی برای هر اتصال.
+- 🌐 **چندزبانه (i18n)**: پشتیبانی کامل از زبان‌های فارسی، انگلیسی و روسی.
+- 🎨 **طراحی مدرن Glassmorphism**: هماهنگی کامل در هر دو تم تاریک (Dark Mode) و روشن (Light Mode).
+- ⚡ **تک فایلی (Single File)**: خروجی بهینه و سبک با قابلیت نصب روی هر وب‌سرور یا مستقیم روی پنل‌ها.
 
 ---
 
 ## مراحل نصب
 
-### مرزبان
+### پاسارگارد (Pasarguard)
 
-۱. **قالب رو با دستور زیر دانلود کنید**
+۱. **قالب را با دستور زیر دانلود کنید:**
+   ```sh
+   sudo wget -N -P /var/lib/pasarguard/templates/subscription/ https://github.com/MatinDehghanian/Ourenus/releases/latest/download/index.html
+   ```
+
+۲. **دستورات زیر را در ترمینال سرور خود وارد کنید:**
+   ```sh
+   echo 'CUSTOM_TEMPLATES_DIRECTORY="/var/lib/pasarguard/templates/"' | sudo tee -a /opt/pasarguard/.env
+   echo 'SUBSCRIPTION_PAGE_TEMPLATE="subscription/index.html"' | sudo tee -a /opt/pasarguard/.env
+   ```
+   یا مقادیر زیر را در فایل `.env` در مسیر `/opt/pasarguard` با حذف `#` از حالت کامنت خارج کنید:
+   ```env
+   CUSTOM_TEMPLATES_DIRECTORY="/var/lib/pasarguard/templates/"
+   SUBSCRIPTION_PAGE_TEMPLATE="subscription/index.html"
+   ```
+
+۳. **ریستارت کردن پاسارگارد:**
+   ```sh
+   pasarguard restart
+   ```
+
+---
+
+### مرزبان (Marzban)
+
+۱. **قالب را با دستور زیر دانلود کنید:**
    ```sh
    sudo wget -N -P /var/lib/marzban/templates/subscription/ https://github.com/MatinDehghanian/Ourenus/releases/latest/download/index.html
    ```
 
-۲. **دستورات زیر رو تو ترمینال سرورتون بزنید**
+۲. **دستورات زیر را در ترمینال سرور خود وارد کنید:**
    ```sh
    echo 'CUSTOM_TEMPLATES_DIRECTORY="/var/lib/marzban/templates/"' | sudo tee -a /opt/marzban/.env
    echo 'SUBSCRIPTION_PAGE_TEMPLATE="subscription/index.html"' | sudo tee -a /opt/marzban/.env
    ```
-   یا مقادیر زیر رو در فایل `.env` در پوشه `/opt/marzban` با پاک کردن `#` اول آنها از حالت کامنت در بیارید.
-   ```
+   یا مقادیر زیر را در فایل `.env` در مسیر `/opt/marzban` از حالت کامنت خارج کنید:
+   ```env
    CUSTOM_TEMPLATES_DIRECTORY="/var/lib/marzban/templates/"
    SUBSCRIPTION_PAGE_TEMPLATE="subscription/index.html"
    ```
 
-۳. **ریستارت کردن مرزبان**
+۳. **ریستارت کردن مرزبان:**
    ```sh
    marzban restart
    ```
 
-### مرزنشین
+---
 
-۱. **قالب رو با دستور زیر دانلود کنید**
+### مرزنشین (Marzneshin)
+
+۱. **قالب را با دستور زیر دانلود کنید:**
    ```sh
    sudo wget -N -P /var/lib/marzneshin/templates/subscription/ https://github.com/MatinDehghanian/Ourenus/releases/latest/download/index.html
    ```
 
-۲. **دستورات زیر رو تو ترمینال سرورتون بزنید**
+۲. **دستورات زیر را در ترمینال سرور خود وارد کنید:**
    ```sh
    echo 'CUSTOM_TEMPLATES_DIRECTORY="/var/lib/marzneshin/templates/"' | sudo tee -a /etc/opt/marzneshin/.env
    echo 'SUBSCRIPTION_PAGE_TEMPLATE="subscription/index.html"' | sudo tee -a /etc/opt/marzneshin/.env
    ```
-   یا مقادیر زیر رو در فایل `.env` در پوشه `/etc/opt/marzneshin` با پاک کردن `#` اول آنها از حالت کامنت در بیارید.
-   ```
+   یا مقادیر زیر را در فایل `.env` در مسیر `/etc/opt/marzneshin` از حالت کامنت خارج کنید:
+   ```env
    CUSTOM_TEMPLATES_DIRECTORY="/var/lib/marzneshin/templates/"
    SUBSCRIPTION_PAGE_TEMPLATE="subscription/index.html"
    ```
 
-۳. **ریستارت کردن مرزنشین**
+۳. **ریستارت کردن مرزنشین:**
    ```sh
    marzneshin restart
    ```
@@ -80,77 +111,83 @@
 ---
 
 ## بروزرسانی قالب
-برای بروزرسانی تمپلیت فقط کافیست مرحله 1 را تکرار کنید.
+برای بروزرسانی به آخرین نسخه، کافیست دستور دانلود (مرحله ۱) را مجدداً اجرا کرده و سپس پنل را ریستارت کنید.
 
 ---
 
 ## شخصی سازی
-برای شخصی سازی لیست اپلیکیشن ها و لیست پشتیبانی:
-- **اپلیکیشن ها**: [public-assets Apps JSON](https://github.com/MatinDehghanian/public-assets/blob/main/json/apps.json)
-- **توضیحات**: ریپازیتوری من رو فورک کنید. و باتوجه به ساختار اون لینک یا اسم یا عکسش رو تغییر بدید
+برای شخصی‌سازی لیست اپلیکیشن‌ها و اطلاعات پشتیبانی:
+- **لیست اپ‌ها**: [public-assets Apps JSON](https://github.com/MatinDehghanian/public-assets/blob/main/json/apps.json)
+- ریپازیتوری را فورک کرده و لینک فایل JSON، لوگو یا نام برند خود را در متغیرهای محیطی (`.env`) تنظیم کنید.
 
-**ویدیو آموزشی**:  
+**ویدیوهای آموزشی**:  
 [![YouTube Tutorial Video](https://img.youtube.com/vi/l5Pvy6Hof9o/0.jpg)](https://www.youtube.com/watch?v=l5Pvy6Hof9o)
 [![YouTube Tutorial Video #2](https://img.youtube.com/vi/6s8931r9E24/0.jpg)](https://youtu.be/6s8931r9E24)
 
 ---
 
 ## حمایت و سفارشات
-برای پشتیبانی یا سفارش قالب اختصاصی با من توی تلگرام در ارتباط باشید [Telegram](https://t.me/Mqtin).
+برای ارتباط، پشتیبانی یا سفارش قالب اختصاصی در تلگرام: [Telegram @Mqtin](https://t.me/Mqtin).
 
 <a href="https://nowpayments.io/donation?api_key=Z50AKDD-DHSMN86-P0DQ22X-1SQAFCA" target="_blank" rel="noreferrer noopener">
     <img src="https://nowpayments.io/images/embeds/donation-button-black.svg" alt="Crypto donation button by NOWPayments">
 </a>
 
-
 ---
 
-# Ourenus
+# Ourenus Subscription Template
 
-## Desktop View
-<img width="1458" alt="image" src="https://github.com/user-attachments/assets/49983ceb-fefd-4a35-a488-4202dc7bd353">
-
-
-## Responsive Mobile View
-![image](https://github.com/user-attachments/assets/9a0605e4-f339-4a79-86f5-5aadd4fee9d9)
-
-
----
-
-## Built With
-- **React**: Version 18
-- **Vite**: Version 5
-- **Material UI**
-
----
+A modern, responsive, and feature-rich subscription page template for **Pasarguard**, **Marzban**, and **Marzneshin**.
 
 ## Features
-- **Quick Link Addition**: Add subscription links with ease.
-- **Customizable Application List**: Modify and extend the app list as needed.
-- **Comprehensive Service Information**: Access detailed and practical service info.
-- **Config Management**: Retrieve config lists and generate QR codes for each config.
-- **Full App Customization**: Tailor applications completely to your needs.
+- **Pasarguard & Multi-Panel Compatibility**: Full native support for Pasarguard's new API alongside legacy Marzban/Marzneshin formats.
+- **Interactive Usage Chart**:
+  - Multiple time period views (**24H, 7D, 30D, 12M, All**).
+  - Switchable **Area** and **Bar** chart formats.
+  - Comprehensive usage stats summary (**Total Usage**, **Average Usage**, **Peak Usage**).
+  - Smart status lock for on-hold/zero-traffic users.
+  - Auto-hides when connecting to panels without usage logging API.
+- **Dynamic User & Service Info**: Real-time traffic, remaining time, and dynamic status badges.
+- **Application Setup Guides**: OS-tailored software recommendations with one-click import.
+- **Config Management**: Direct copy and individual QR codes for all proxies.
+- **Multi-Language**: Persian, English, and Russian out of the box.
+- **Dark & Light Modes**: Glassmorphic theme built on Material UI and customized palette tokens.
 
 ---
 
 ## Installation Steps
 
+### For Pasarguard
+
+1. **Download the Template:**
+   ```sh
+   sudo wget -N -P /var/lib/pasarguard/templates/subscription/ https://github.com/MatinDehghanian/Ourenus/releases/latest/download/index.html
+   ```
+
+2. **Configure Environment in `/opt/pasarguard/.env`:**
+   ```sh
+   echo 'CUSTOM_TEMPLATES_DIRECTORY="/var/lib/pasarguard/templates/"' | sudo tee -a /opt/pasarguard/.env
+   echo 'SUBSCRIPTION_PAGE_TEMPLATE="subscription/index.html"' | sudo tee -a /opt/pasarguard/.env
+   ```
+
+3. **Restart Pasarguard:**
+   ```sh
+   pasarguard restart
+   ```
+
+---
+
 ### For Marzban
 
-1. **Download the Template File:**
+1. **Download the Template:**
    ```sh
    sudo wget -N -P /var/lib/marzban/templates/subscription/ https://github.com/MatinDehghanian/Ourenus/releases/latest/download/index.html
    ```
 
-2. **Execute the Following Commands in Your Server Terminal:**
+2. **Configure Environment in `/opt/marzban/.env`:**
    ```sh
    echo 'CUSTOM_TEMPLATES_DIRECTORY="/var/lib/marzban/templates/"' | sudo tee -a /opt/marzban/.env
    echo 'SUBSCRIPTION_PAGE_TEMPLATE="subscription/index.html"' | sudo tee -a /opt/marzban/.env
-   ```
-   Or uncomment the following lines in the `.env` file located in `/opt/marzban` by removing the `#` at the beginning:
-   ```sh
-   CUSTOM_TEMPLATES_DIRECTORY="/var/lib/marzban/templates/"
-   SUBSCRIPTION_PAGE_TEMPLATE="subscription/index.html"
    ```
 
 3. **Restart Marzban:**
@@ -158,50 +195,22 @@
    marzban restart
    ```
 
+---
+
 ### For Marzneshin
 
-1. **Download the Template File:**
+1. **Download the Template:**
    ```sh
    sudo wget -N -P /var/lib/marzneshin/templates/subscription/ https://github.com/MatinDehghanian/Ourenus/releases/latest/download/index.html
    ```
 
-2. **Execute the Following Commands in Your Server Terminal:**
+2. **Configure Environment in `/etc/opt/marzneshin/.env`:**
    ```sh
    echo 'CUSTOM_TEMPLATES_DIRECTORY="/var/lib/marzneshin/templates/"' | sudo tee -a /etc/opt/marzneshin/.env
    echo 'SUBSCRIPTION_PAGE_TEMPLATE="subscription/index.html"' | sudo tee -a /etc/opt/marzneshin/.env
-   ```
-   Or uncomment the following lines in the `.env` file located in `/etc/opt/marzneshin` by removing the `#` at the beginning:
-   ```sh
-   CUSTOM_TEMPLATES_DIRECTORY="/var/lib/marzneshin/templates/"
-   SUBSCRIPTION_PAGE_TEMPLATE="subscription/index.html"
    ```
 
 3. **Restart Marzneshin:**
    ```sh
    marzneshin restart
    ```
-
----
-
-## Updating the Template
-To update the template, simply repeat Step 1 from the installation guide.
-
----
-
-## Customization
-To customize the app list or support List:
-- **Apps List**: [public-assets Apps JSON](https://github.com/MatinDehghanian/public-assets/blob/main/json/apps.json)
-- **Instructions**: Fork the repository if needed, add applications based on the operating system, provide custom icons, or update the program links.
-
-**Video Tutorial**:  
-[![YouTube Tutorial Video](https://img.youtube.com/vi/l5Pvy6Hof9o/0.jpg)](https://www.youtube.com/watch?v=l5Pvy6Hof9o)
-[![YouTube Tutorial Video #2](https://img.youtube.com/vi/6s8931r9E24/0.jpg)](https://youtu.be/6s8931r9E24)
-
----
-
-## Support & Custom Orders
-For custom templates or support, reach out to me on [Telegram](https://t.me/Mqtin).
-
-<a href="https://nowpayments.io/donation?api_key=Z50AKDD-DHSMN86-P0DQ22X-1SQAFCA" target="_blank" rel="noreferrer noopener">
-    <img src="https://nowpayments.io/images/embeds/donation-button-black.svg" alt="Crypto donation button by NOWPayments">
-</a>
