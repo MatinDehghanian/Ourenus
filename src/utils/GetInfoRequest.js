@@ -1,4 +1,5 @@
 import Request from "./Request";
+import { normalizeUserData } from "./dataAdapter";
 
 export default class GetInfoRequest extends Request {
   static async getInfo() {
@@ -15,6 +16,10 @@ export default class GetInfoRequest extends Request {
           toastError: true,
         }
       );
+      // Normalize the response to a consistent internal shape
+      if (response?.data) {
+        response.data = normalizeUserData(response.data);
+      }
       return response;
     } catch (error) {
       console.error("Error fetching info:", error);

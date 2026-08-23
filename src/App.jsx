@@ -43,15 +43,18 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (data?.links) {
+    if (data?.links && Array.isArray(data.links)) {
+      // Legacy API: links embedded in the response
       const links =
         data.links[data.links.length - 1] === "False"
           ? data.links.slice(0, -1)
           : data.links;
       setDataLinks(links);
-    } else if (data && !data.links) {
+    } else if (data) {
+      // New API (or legacy without links): fetch configs from subscription URL
       GetInfoRequest.getConfigs().then((res) => {
-        const links = res.data.trim();
+        if (!res?.data) return;
+        const links = typeof res.data === "string" ? res.data.trim() : "";
         const decodedLinks =
           links.includes("vmess") || links.includes("vless")
             ? links
@@ -156,7 +159,9 @@ function App() {
                 {isOffSections.userBox && (
                   <UserBox
                     data={data}
-                    subLink={getAdjustedUrl(data?.subscription_url)}
+                    subLink={getAdjustedUrl(
+                      data?.subscription_url || window.location.pathname.split("#")[0]
+                    )}
                   />
                 )}
                 {isOffSections.usageBox && (
@@ -180,16 +185,18 @@ function App() {
                   <UsageBox
                     type="time"
                     value={calculateUsedTimePercentage(
-                      data?.expire || data?.expire_date
+                      data?.expire
                     )}
                     remaining={calculateRemainingTime(
-                      data?.expire || data?.expire_date,
+                      data?.expire,
                       t
                     )}
                   />
                 )}
                 {isOffSections.appsBox && (
-                  <Apps subLink={getAdjustedUrl(data?.subscription_url)} />
+                  <Apps subLink={getAdjustedUrl(
+                    data?.subscription_url || window.location.pathname.split("#")[0]
+                  )} />
                 )}
                 {isOffSections.configs && (
                   <Configs

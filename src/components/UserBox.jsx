@@ -17,16 +17,20 @@ const UserBox = ({ data, subLink }) => {
 
   useEffect(() => {
     if (data?.status) {
-      setStatusData(data?.status);
+      // New API (and some legacy responses) provide status directly
+      setStatusData(data.status);
     } else if (data?.expired || data?.data_limit_reached) {
+      // Legacy API fallback
       setStatusData("expired");
-    } else if (!data?.enabled) {
+    } else if (data && data.enabled === false) {
       setStatusData("disabled");
     } else if (data?.is_active) {
       setStatusData("active");
-    } else if (data?.activated === null) {
+    } else if (data && data.activated === null) {
       setStatusData("on_hold");
-    } else return setStatusData("");
+    } else {
+      setStatusData("");
+    }
   }, [data]);
 
   const getStatusBackgroundColor = (status) => {
