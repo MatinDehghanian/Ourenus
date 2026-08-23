@@ -105,16 +105,19 @@ const formatDateLabel = (date, period, lang) => {
 const CustomTooltip = ({ active, payload, isDark, t }) => {
   if (active && payload && payload.length) {
     const item = payload[0].payload;
+    const accentColor = isDark
+      ? "rgba(180, 185, 230, 1)"
+      : "rgba(72, 76, 112, 1)";
     return (
       <Box
         sx={{
           background: isDark
-            ? "rgba(28, 32, 48, 0.92)"
+            ? "rgba(38, 42, 62, 0.95)"
             : "rgba(255, 255, 255, 0.95)",
           backdropFilter: "blur(12px)",
           border: isDark
-            ? "1px solid rgba(255, 255, 255, 0.15)"
-            : "1px solid rgba(0, 0, 0, 0.1)",
+            ? "1px solid rgba(143, 141, 179, 0.3)"
+            : "1px solid rgba(72, 76, 112, 0.25)",
           boxShadow: "0 8px 32px rgba(0, 0, 0, 0.2)",
           borderRadius: "12px",
           padding: "0.6rem 1rem",
@@ -134,7 +137,7 @@ const CustomTooltip = ({ active, payload, isDark, t }) => {
           sx={{
             fontSize: "0.95rem",
             fontWeight: "bold",
-            color: "#10B981",
+            color: accentColor,
           }}
         >
           {t("usageChart.usage")}: {item.formattedUsage}
@@ -151,6 +154,15 @@ const UsageChart = () => {
   const isDark = theme.palette.mode === "dark";
   const lang = i18n.language;
   const isRtl = lang === "fa";
+
+  // Base brand colors matching rgba(72, 76, 112, 1)
+  const brandMain = isDark ? "rgba(143, 141, 179, 1)" : "rgba(72, 76, 112, 1)";
+  const brandGradient = isDark
+    ? "linear-gradient(135deg, rgba(117, 122, 166, 1) 0%, rgba(82, 88, 125, 1) 100%)"
+    : "linear-gradient(135deg, rgba(72, 76, 112, 1) 0%, rgba(52, 56, 88, 1) 100%)";
+  const brandGradientHover = isDark
+    ? "linear-gradient(135deg, rgba(143, 141, 179, 1) 0%, rgba(100, 106, 148, 1) 100%)"
+    : "linear-gradient(135deg, rgba(92, 97, 138, 1) 0%, rgba(62, 66, 100, 1) 100%)";
 
   const [period, setPeriod] = useState("7D");
   const [chartType, setChartType] = useState("area");
@@ -268,7 +280,7 @@ const UsageChart = () => {
           }}
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-            <ShowChartIcon sx={{ color: "#10B981" }} />
+            <ShowChartIcon sx={{ color: brandMain }} />
             <Typography sx={{ fontWeight: "bold", fontSize: "1.05rem" }}>
               {t("usageChart.title")}
             </Typography>
@@ -294,18 +306,16 @@ const UsageChart = () => {
                 padding: "4px 12px",
                 fontSize: "0.75rem",
                 background:
-                  chartType === "area"
-                    ? "linear-gradient(135deg, #10B981, #059669)"
-                    : "transparent",
+                  chartType === "area" ? brandGradient : "transparent",
                 color: chartType === "area" ? "#fff" : "inherit",
                 boxShadow:
                   chartType === "area"
-                    ? "0 2px 8px rgba(16, 185, 129, 0.4)"
+                    ? "0 2px 8px rgba(72, 76, 112, 0.4)"
                     : "none",
                 "&:hover": {
                   background:
                     chartType === "area"
-                      ? "linear-gradient(135deg, #10B981, #059669)"
+                      ? brandGradientHover
                       : isDark
                       ? "rgba(255, 255, 255, 0.1)"
                       : "rgba(0, 0, 0, 0.08)",
@@ -324,18 +334,16 @@ const UsageChart = () => {
                 padding: "4px 12px",
                 fontSize: "0.75rem",
                 background:
-                  chartType === "bar"
-                    ? "linear-gradient(135deg, #10B981, #059669)"
-                    : "transparent",
+                  chartType === "bar" ? brandGradient : "transparent",
                 color: chartType === "bar" ? "#fff" : "inherit",
                 boxShadow:
                   chartType === "bar"
-                    ? "0 2px 8px rgba(16, 185, 129, 0.4)"
+                    ? "0 2px 8px rgba(72, 76, 112, 0.4)"
                     : "none",
                 "&:hover": {
                   background:
                     chartType === "bar"
-                      ? "linear-gradient(135deg, #10B981, #059669)"
+                      ? brandGradientHover
                       : isDark
                       ? "rgba(255, 255, 255, 0.1)"
                       : "rgba(0, 0, 0, 0.08)",
@@ -392,17 +400,17 @@ const UsageChart = () => {
                   minWidth: "unset",
                   fontWeight: isSelected ? "bold" : "normal",
                   background: isSelected
-                    ? "linear-gradient(135deg, #10B981, #059669)"
+                    ? brandGradient
                     : isDark
                     ? "rgba(255, 255, 255, 0.06)"
                     : "rgba(0, 0, 0, 0.04)",
                   color: isSelected ? "#fff" : "inherit",
                   boxShadow: isSelected
-                    ? "0 2px 6px rgba(16, 185, 129, 0.3)"
+                    ? "0 2px 6px rgba(72, 76, 112, 0.35)"
                     : "none",
                   "&:hover": {
                     background: isSelected
-                      ? "linear-gradient(135deg, #10B981, #059669)"
+                      ? brandGradientHover
                       : isDark
                       ? "rgba(255, 255, 255, 0.12)"
                       : "rgba(0, 0, 0, 0.08)",
@@ -432,8 +440,8 @@ const UsageChart = () => {
         <Box
           sx={{
             background: isDark
-              ? "rgba(0, 0, 0, 0.2)"
-              : "rgba(255, 255, 255, 0.45)",
+              ? "rgba(0, 0, 0, 0.25)"
+              : "rgba(255, 255, 255, 0.5)",
             backdropFilter: "blur(8px)",
             borderRadius: "14px",
             padding: "0.8rem 0.4rem",
@@ -455,7 +463,7 @@ const UsageChart = () => {
                 paddingY: "2.5rem",
               }}
             >
-              <CircularProgress size={36} sx={{ color: "#10B981" }} />
+              <CircularProgress size={36} sx={{ color: brandMain }} />
               <Typography sx={{ fontSize: "0.85rem", opacity: 0.7 }}>
                 {t("usageChart.loading")}
               </Typography>
@@ -489,11 +497,15 @@ const UsageChart = () => {
                   borderRadius: "50px",
                   fontSize: "0.75rem",
                   textTransform: "none",
-                  borderColor: "rgba(16, 185, 129, 0.5)",
-                  color: isDark ? "#fff" : "#10B981",
+                  borderColor: isDark
+                    ? "rgba(143, 141, 179, 0.5)"
+                    : "rgba(72, 76, 112, 0.5)",
+                  color: isDark ? "#fff" : brandMain,
                   "&:hover": {
-                    borderColor: "#10B981",
-                    background: "rgba(16, 185, 129, 0.1)",
+                    borderColor: brandMain,
+                    background: isDark
+                      ? "rgba(143, 141, 179, 0.15)"
+                      : "rgba(72, 76, 112, 0.1)",
                   },
                 }}
               >
@@ -505,7 +517,7 @@ const UsageChart = () => {
               {chartType === "area" ? (
                 <AreaChart
                   data={data}
-                  margin={{ top: 10, right: 15, left: -10, bottom: 0 }}
+                  margin={{ top: 10, right: 15, left: 5, bottom: 0 }}
                 >
                   <defs>
                     <linearGradient
@@ -515,28 +527,47 @@ const UsageChart = () => {
                       x2="0"
                       y2="1"
                     >
-                      <stop offset="5%" stopColor="#10B981" stopOpacity={0.45} />
-                      <stop offset="95%" stopColor="#10B981" stopOpacity={0.03} />
+                      <stop
+                        offset="5%"
+                        stopColor={
+                          isDark
+                            ? "rgba(143, 141, 179, 1)"
+                            : "rgba(72, 76, 112, 1)"
+                        }
+                        stopOpacity={0.5}
+                      />
+                      <stop
+                        offset="95%"
+                        stopColor={
+                          isDark
+                            ? "rgba(117, 122, 166, 1)"
+                            : "rgba(52, 56, 88, 1)"
+                        }
+                        stopOpacity={0.02}
+                      />
                     </linearGradient>
                   </defs>
                   <CartesianGrid
                     strokeDasharray="3 3"
-                    stroke={isDark ? "#374151" : "#E5E7EB"}
-                    strokeOpacity={0.4}
+                    stroke={
+                      isDark ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.08)"
+                    }
+                    strokeOpacity={0.5}
                   />
                   <XAxis
                     dataKey="formattedDate"
                     tick={{
                       fontSize: 11,
-                      fill: isDark ? "#9CA3AF" : "#6B7280",
+                      fill: isDark ? "#B0B3C7" : "#555977",
                     }}
                     axisLine={false}
                     tickLine={false}
                   />
                   <YAxis
+                    width={55}
                     tick={{
                       fontSize: 11,
-                      fill: isDark ? "#9CA3AF" : "#6B7280",
+                      fill: isDark ? "#B0B3C7" : "#555977",
                     }}
                     axisLine={false}
                     tickLine={false}
@@ -551,22 +582,34 @@ const UsageChart = () => {
                   <Area
                     type="monotone"
                     dataKey="usage"
-                    stroke="#10B981"
+                    stroke={
+                      isDark
+                        ? "rgba(143, 141, 179, 1)"
+                        : "rgba(72, 76, 112, 1)"
+                    }
                     strokeWidth={2.5}
                     fill="url(#usageGradientArea)"
-                    dot={{ fill: "#10B981", strokeWidth: 2, r: 3 }}
+                    dot={{
+                      fill: isDark
+                        ? "rgba(143, 141, 179, 1)"
+                        : "rgba(72, 76, 112, 1)",
+                      strokeWidth: 2,
+                      r: 3,
+                    }}
                     activeDot={{
                       r: 6,
                       stroke: "#fff",
                       strokeWidth: 2,
-                      fill: "#10B981",
+                      fill: isDark
+                        ? "rgba(143, 141, 179, 1)"
+                        : "rgba(72, 76, 112, 1)",
                     }}
                   />
                 </AreaChart>
               ) : (
                 <BarChart
                   data={data}
-                  margin={{ top: 10, right: 15, left: -10, bottom: 0 }}
+                  margin={{ top: 10, right: 15, left: 5, bottom: 0 }}
                 >
                   <defs>
                     <linearGradient
@@ -576,28 +619,47 @@ const UsageChart = () => {
                       x2="0"
                       y2="1"
                     >
-                      <stop offset="0%" stopColor="#34D399" stopOpacity={0.9} />
-                      <stop offset="100%" stopColor="#059669" stopOpacity={0.7} />
+                      <stop
+                        offset="0%"
+                        stopColor={
+                          isDark
+                            ? "rgba(160, 165, 210, 1)"
+                            : "rgba(92, 97, 138, 1)"
+                        }
+                        stopOpacity={0.95}
+                      />
+                      <stop
+                        offset="100%"
+                        stopColor={
+                          isDark
+                            ? "rgba(117, 122, 166, 1)"
+                            : "rgba(72, 76, 112, 1)"
+                        }
+                        stopOpacity={0.85}
+                      />
                     </linearGradient>
                   </defs>
                   <CartesianGrid
                     strokeDasharray="3 3"
-                    stroke={isDark ? "#374151" : "#E5E7EB"}
-                    strokeOpacity={0.4}
+                    stroke={
+                      isDark ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.08)"
+                    }
+                    strokeOpacity={0.5}
                   />
                   <XAxis
                     dataKey="formattedDate"
                     tick={{
                       fontSize: 11,
-                      fill: isDark ? "#9CA3AF" : "#6B7280",
+                      fill: isDark ? "#B0B3C7" : "#555977",
                     }}
                     axisLine={false}
                     tickLine={false}
                   />
                   <YAxis
+                    width={55}
                     tick={{
                       fontSize: 11,
-                      fill: isDark ? "#9CA3AF" : "#6B7280",
+                      fill: isDark ? "#B0B3C7" : "#555977",
                     }}
                     axisLine={false}
                     tickLine={false}
@@ -673,7 +735,7 @@ const UsageChart = () => {
               sx={{
                 fontSize: "0.95rem",
                 fontWeight: "bold",
-                color: "#10B981",
+                color: brandMain,
               }}
             >
               {summary.peak.value}{" "}
