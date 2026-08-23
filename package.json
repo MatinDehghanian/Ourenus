@@ -27,6 +27,7 @@
     "react-qr-code": "^2.0.15",
     "react-spinners": "^0.14.1",
     "react-toastify": "^10.0.5",
+    "recharts": "^3.10.1",
     "rollup-plugin-obfuscator": "^1.1.0",
     "vite-plugin-singlefile": "^2.3.0"
   },

@@ -141,3 +141,33 @@ export const formatTraffic = (bytes, t) => {
   }
   return `${(bytes / 1024 ** 4).toFixed(2)} ${t("TB")}`;
 };
+
+export const formatBytes = (bytes, t) => {
+  if (bytes === null || bytes === undefined || isNaN(bytes) || bytes < 0) {
+    return { value: "0", unit: typeof t === "function" ? t("B") : "B" };
+  }
+
+  const units = [
+    typeof t === "function" ? t("B") : "B",
+    typeof t === "function" ? t("KB") : "KB",
+    typeof t === "function" ? t("MB") : "MB",
+    typeof t === "function" ? t("GB") : "GB",
+    typeof t === "function" ? t("TB") : "TB",
+  ];
+  const thresholds = [1, 1024, 1024 ** 2, 1024 ** 3];
+
+  for (let i = 0; i < thresholds.length; i++) {
+    if (bytes < thresholds[i] * 1024) {
+      const val = bytes / thresholds[i];
+      return {
+        value: val >= 10 ? val.toFixed(0) : val.toFixed(1),
+        unit: units[i],
+      };
+    }
+  }
+  return {
+    value: (bytes / 1024 ** 4).toFixed(2),
+    unit: units[4],
+  };
+};
+

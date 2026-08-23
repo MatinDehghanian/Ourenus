@@ -2,6 +2,7 @@ import { Grid, ThemeProvider, CssBaseline } from "@mui/material";
 import LogoBox from "./components/LogoBox";
 import UserBox from "./components/UserBox";
 import UsageBox from "./components/UsageBox";
+import UsageChart from "./components/UsageChart";
 import Apps from "./components/Apps";
 import { useState, useMemo, useEffect } from "react";
 import { useTranslation } from "react-i18next";
@@ -101,6 +102,7 @@ function App() {
         userBox: true,
         supportBox: true,
         configs: true,
+        chartBox: true,
       };
     } catch (error) {
       console.error("Failed to parse VITE_OFF_SECTIONS:", error);
@@ -112,6 +114,7 @@ function App() {
         userBox: true,
         supportBox: true,
         configs: true,
+        chartBox: true,
       };
     }
   }, []);
@@ -192,6 +195,9 @@ function App() {
                       t
                     )}
                   />
+                )}
+                {isOffSections.chartBox !== false && isOffSections.usageChart !== false && (
+                  <UsageChart />
                 )}
                 {isOffSections.appsBox && (
                   <Apps subLink={getAdjustedUrl(

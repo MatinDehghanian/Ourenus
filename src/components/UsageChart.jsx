@@ -1,0 +1,694 @@
+/* eslint-disable react/prop-types */
+import { useState, useEffect, useCallback, useMemo } from "react";
+import {
+  Box,
+  Button,
+  Grid,
+  Typography,
+  useTheme,
+  CircularProgress,
+} from "@mui/material";
+import ShowChartIcon from "@mui/icons-material/ShowChart";
+import BarChartIcon from "@mui/icons-material/BarChart";
+import RefreshIcon from "@mui/icons-material/Refresh";
+import { useTranslation } from "react-i18next";
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+} from "recharts";
+import GetInfoRequest from "../utils/GetInfoRequest";
+import { formatBytes } from "../utils/Helper";
+
+const PERIODS = ["24H", "7D", "30D", "12M", "All"];
+
+const calculateDateRange = (period) => {
+  const now = new Date();
+  const endDate = new Date(now);
+  let startDate;
+  let apiPeriod;
+
+  switch (period) {
+    case "24H":
+      startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      apiPeriod = "hour";
+      break;
+    case "7D":
+      startDate = new Date(now);
+      startDate.setDate(now.getDate() - 6);
+      startDate.setHours(0, 0, 0, 0);
+      apiPeriod = "day";
+      break;
+    case "30D":
+      startDate = new Date(now);
+      startDate.setDate(now.getDate() - 29);
+      startDate.setHours(0, 0, 0, 0);
+      apiPeriod = "day";
+      break;
+    case "12M":
+      startDate = new Date(now);
+      startDate.setMonth(now.getMonth() - 11);
+      startDate.setDate(1);
+      startDate.setHours(0, 0, 0, 0);
+      apiPeriod = "month";
+      break;
+    case "All":
+      startDate = new Date(0);
+      apiPeriod = "month";
+      break;
+    default:
+      startDate = new Date(now);
+      startDate.setDate(now.getDate() - 6);
+      startDate.setHours(0, 0, 0, 0);
+      apiPeriod = "day";
+  }
+
+  return { startDate, endDate, apiPeriod };
+};
+
+const formatDateLabel = (date, period, lang) => {
+  const locale = lang === "fa" ? "fa-IR" : lang === "ru" ? "ru-RU" : "en-US";
+
+  switch (period) {
+    case "24H":
+      return date.toLocaleTimeString(locale, {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    case "7D":
+    case "30D":
+      return date.toLocaleDateString(locale, {
+        month: "short",
+        day: "numeric",
+      });
+    case "12M":
+      return date.toLocaleDateString(locale, {
+        year: "numeric",
+        month: "short",
+      });
+    case "All":
+      return date.toLocaleDateString(locale, {
+        year: "2-digit",
+        month: "short",
+      });
+    default:
+      return date.toLocaleDateString(locale);
+  }
+};
+
+const CustomTooltip = ({ active, payload, isDark, t }) => {
+  if (active && payload && payload.length) {
+    const item = payload[0].payload;
+    return (
+      <Box
+        sx={{
+          background: isDark
+            ? "rgba(28, 32, 48, 0.92)"
+            : "rgba(255, 255, 255, 0.95)",
+          backdropFilter: "blur(12px)",
+          border: isDark
+            ? "1px solid rgba(255, 255, 255, 0.15)"
+            : "1px solid rgba(0, 0, 0, 0.1)",
+          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.2)",
+          borderRadius: "12px",
+          padding: "0.6rem 1rem",
+          textAlign: "center",
+        }}
+      >
+        <Typography
+          sx={{
+            fontSize: "0.75rem",
+            color: isDark ? "rgba(255, 255, 255, 0.7)" : "rgba(0, 0, 0, 0.6)",
+            marginBottom: "0.2rem",
+          }}
+        >
+          {item.formattedDate}
+        </Typography>
+        <Typography
+          sx={{
+            fontSize: "0.95rem",
+            fontWeight: "bold",
+            color: "#10B981",
+          }}
+        >
+          {t("usageChart.usage")}: {item.formattedUsage}
+        </Typography>
+      </Box>
+    );
+  }
+  return null;
+};
+
+const UsageChart = () => {
+  const theme = useTheme();
+  const { t, i18n } = useTranslation();
+  const isDark = theme.palette.mode === "dark";
+  const lang = i18n.language;
+  const isRtl = lang === "fa";
+
+  const [period, setPeriod] = useState("7D");
+  const [chartType, setChartType] = useState("area");
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchStats = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { startDate, endDate, apiPeriod } = calculateDateRange(period);
+      const res = await GetInfoRequest.getUsage(apiPeriod, startDate, endDate);
+      const rawStats = res?.data?.stats;
+
+      if (rawStats && typeof rawStats === "object" && !Array.isArray(rawStats)) {
+        const statsList = rawStats[-1] || Object.values(rawStats)[0] || [];
+        const formatted = statsList.map((item) => {
+          const d = new Date(item.period_start);
+          const bytes = item.total_traffic || 0;
+          const fb = formatBytes(bytes, t);
+          return {
+            date: d.toISOString().split("T")[0],
+            usage: bytes,
+            formattedDate: formatDateLabel(d, period, lang),
+            formattedUsage: `${fb.value} ${fb.unit}`,
+          };
+        });
+        setData(formatted);
+      } else {
+        setData([]);
+      }
+    } catch (err) {
+      console.error("Error fetching usage chart data:", err);
+      setError(err?.message || "Failed to load usage chart data");
+    } finally {
+      setLoading(false);
+    }
+  }, [period, lang, t]);
+
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
+
+  const summary = useMemo(() => {
+    if (!data.length) {
+      return {
+        total: { value: "0", unit: t("B") },
+        avg: { value: "0", unit: t("B") },
+        peak: { value: "0", unit: t("B") },
+      };
+    }
+    const totalBytes = data.reduce((acc, curr) => acc + curr.usage, 0);
+    const avgBytes = totalBytes / Math.max(data.length, 1);
+    const peakBytes = Math.max(...data.map((d) => d.usage), 0);
+
+    return {
+      total: formatBytes(totalBytes, t),
+      avg: formatBytes(avgBytes, t),
+      peak: formatBytes(peakBytes, t),
+    };
+  }, [data, t]);
+
+  const descriptionKey = useMemo(() => {
+    switch (period) {
+      case "24H":
+        return "description24h";
+      case "7D":
+        return "description7d";
+      case "30D":
+        return "description30d";
+      case "12M":
+        return "description12m";
+      default:
+        return "descriptionAll";
+    }
+  }, [period]);
+
+  const avgLabelKey = useMemo(() => {
+    if (period === "24H") return "avgHourly";
+    if (period === "12M" || period === "All") return "avgMonthly";
+    return "avgDaily";
+  }, [period]);
+
+  const peakLabelKey = useMemo(() => {
+    if (period === "24H") return "peakHour";
+    if (period === "12M" || period === "All") return "peakMonth";
+    return "peakDay";
+  }, [period]);
+
+  return (
+    <Grid item container justifyContent="space-around" xs={11}>
+      <Box
+        sx={{
+          borderRadius: "16px",
+          marginTop: "1rem",
+          padding: "1.2rem",
+          background: theme.colors.box[theme.palette.mode],
+          boxShadow: "0 0 3rem 10px rgba(0, 0, 0, 0.1)",
+          direction: isRtl ? "rtl" : "ltr",
+          width: "100%",
+          border: theme.colors.box.border[theme.palette.mode],
+          color: theme.colors.BWColor[theme.palette.mode],
+        }}
+      >
+        {/* Header: Title + Type Toggle */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: "0.8rem",
+            flexWrap: "wrap",
+            gap: "0.5rem",
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <ShowChartIcon sx={{ color: "#10B981" }} />
+            <Typography sx={{ fontWeight: "bold", fontSize: "1.05rem" }}>
+              {t("usageChart.title")}
+            </Typography>
+          </Box>
+
+          <Box
+            sx={{
+              display: "flex",
+              background: isDark
+                ? "rgba(255, 255, 255, 0.08)"
+                : "rgba(0, 0, 0, 0.05)",
+              borderRadius: "50px",
+              padding: "2px",
+              gap: "2px",
+            }}
+          >
+            <Button
+              size="small"
+              onClick={() => setChartType("area")}
+              sx={{
+                borderRadius: "50px",
+                minWidth: "40px",
+                padding: "4px 12px",
+                fontSize: "0.75rem",
+                background:
+                  chartType === "area"
+                    ? "linear-gradient(135deg, #10B981, #059669)"
+                    : "transparent",
+                color: chartType === "area" ? "#fff" : "inherit",
+                boxShadow:
+                  chartType === "area"
+                    ? "0 2px 8px rgba(16, 185, 129, 0.4)"
+                    : "none",
+                "&:hover": {
+                  background:
+                    chartType === "area"
+                      ? "linear-gradient(135deg, #10B981, #059669)"
+                      : isDark
+                      ? "rgba(255, 255, 255, 0.1)"
+                      : "rgba(0, 0, 0, 0.08)",
+                },
+              }}
+            >
+              <ShowChartIcon sx={{ fontSize: "1.1rem", marginInlineEnd: "4px" }} />
+              {t("usageChart.area")}
+            </Button>
+            <Button
+              size="small"
+              onClick={() => setChartType("bar")}
+              sx={{
+                borderRadius: "50px",
+                minWidth: "40px",
+                padding: "4px 12px",
+                fontSize: "0.75rem",
+                background:
+                  chartType === "bar"
+                    ? "linear-gradient(135deg, #10B981, #059669)"
+                    : "transparent",
+                color: chartType === "bar" ? "#fff" : "inherit",
+                boxShadow:
+                  chartType === "bar"
+                    ? "0 2px 8px rgba(16, 185, 129, 0.4)"
+                    : "none",
+                "&:hover": {
+                  background:
+                    chartType === "bar"
+                      ? "linear-gradient(135deg, #10B981, #059669)"
+                      : isDark
+                      ? "rgba(255, 255, 255, 0.1)"
+                      : "rgba(0, 0, 0, 0.08)",
+                },
+              }}
+            >
+              <BarChartIcon sx={{ fontSize: "1.1rem", marginInlineEnd: "4px" }} />
+              {t("usageChart.bar")}
+            </Button>
+          </Box>
+        </Box>
+
+        {/* Periods Switcher */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: "0.4rem",
+            marginBottom: "0.6rem",
+            flexWrap: "wrap",
+          }}
+        >
+          <Typography
+            sx={{
+              fontSize: "0.8rem",
+              opacity: 0.7,
+              marginInlineEnd: "0.3rem",
+            }}
+          >
+            {t("usageChart.timePeriod")}:
+          </Typography>
+          {PERIODS.map((p) => {
+            const isSelected = period === p;
+            const periodKey =
+              p === "24H"
+                ? "24h"
+                : p === "7D"
+                ? "7d"
+                : p === "30D"
+                ? "30d"
+                : p === "12M"
+                ? "12m"
+                : "all";
+
+            return (
+              <Button
+                key={p}
+                size="small"
+                onClick={() => setPeriod(p)}
+                sx={{
+                  borderRadius: "50px",
+                  padding: "2px 10px",
+                  fontSize: "0.72rem",
+                  minWidth: "unset",
+                  fontWeight: isSelected ? "bold" : "normal",
+                  background: isSelected
+                    ? "linear-gradient(135deg, #10B981, #059669)"
+                    : isDark
+                    ? "rgba(255, 255, 255, 0.06)"
+                    : "rgba(0, 0, 0, 0.04)",
+                  color: isSelected ? "#fff" : "inherit",
+                  boxShadow: isSelected
+                    ? "0 2px 6px rgba(16, 185, 129, 0.3)"
+                    : "none",
+                  "&:hover": {
+                    background: isSelected
+                      ? "linear-gradient(135deg, #10B981, #059669)"
+                      : isDark
+                      ? "rgba(255, 255, 255, 0.12)"
+                      : "rgba(0, 0, 0, 0.08)",
+                  },
+                }}
+              >
+                {t(`usageChart.${periodKey}`)}
+              </Button>
+            );
+          })}
+        </Box>
+
+        {/* Dynamic Description */}
+        <Typography
+          sx={{
+            fontSize: "0.75rem",
+            opacity: 0.65,
+            marginBottom: "1rem",
+            lineHeight: 1.5,
+          }}
+        >
+          {t(`usageChart.${descriptionKey}`)}{" "}
+          {t("usageChart.descriptionSuffix")}
+        </Typography>
+
+        {/* Chart Canvas Area */}
+        <Box
+          sx={{
+            background: isDark
+              ? "rgba(0, 0, 0, 0.2)"
+              : "rgba(255, 255, 255, 0.45)",
+            backdropFilter: "blur(8px)",
+            borderRadius: "14px",
+            padding: "0.8rem 0.4rem",
+            marginBottom: "1rem",
+            minHeight: "220px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            direction: "ltr",
+          }}
+        >
+          {loading ? (
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "0.8rem",
+                paddingY: "2.5rem",
+              }}
+            >
+              <CircularProgress size={36} sx={{ color: "#10B981" }} />
+              <Typography sx={{ fontSize: "0.85rem", opacity: 0.7 }}>
+                {t("usageChart.loading")}
+              </Typography>
+            </Box>
+          ) : error || !data.length ? (
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "0.6rem",
+                paddingY: "2rem",
+                textAlign: "center",
+              }}
+            >
+              <Typography
+                sx={{
+                  fontSize: "0.85rem",
+                  color: theme.palette.error.main,
+                  opacity: 0.85,
+                }}
+              >
+                {error || t("usageChart.noData")}
+              </Typography>
+              <Button
+                size="small"
+                variant="outlined"
+                onClick={fetchStats}
+                startIcon={<RefreshIcon />}
+                sx={{
+                  borderRadius: "50px",
+                  fontSize: "0.75rem",
+                  textTransform: "none",
+                  borderColor: "rgba(16, 185, 129, 0.5)",
+                  color: isDark ? "#fff" : "#10B981",
+                  "&:hover": {
+                    borderColor: "#10B981",
+                    background: "rgba(16, 185, 129, 0.1)",
+                  },
+                }}
+              >
+                {t("usageChart.retry")}
+              </Button>
+            </Box>
+          ) : (
+            <ResponsiveContainer width="100%" height={220}>
+              {chartType === "area" ? (
+                <AreaChart
+                  data={data}
+                  margin={{ top: 10, right: 15, left: -10, bottom: 0 }}
+                >
+                  <defs>
+                    <linearGradient
+                      id="usageGradientArea"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop offset="5%" stopColor="#10B981" stopOpacity={0.45} />
+                      <stop offset="95%" stopColor="#10B981" stopOpacity={0.03} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke={isDark ? "#374151" : "#E5E7EB"}
+                    strokeOpacity={0.4}
+                  />
+                  <XAxis
+                    dataKey="formattedDate"
+                    tick={{
+                      fontSize: 11,
+                      fill: isDark ? "#9CA3AF" : "#6B7280",
+                    }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    tick={{
+                      fontSize: 11,
+                      fill: isDark ? "#9CA3AF" : "#6B7280",
+                    }}
+                    axisLine={false}
+                    tickLine={false}
+                    tickFormatter={(val) => {
+                      const fb = formatBytes(val, t);
+                      return `${fb.value} ${fb.unit}`;
+                    }}
+                  />
+                  <Tooltip
+                    content={<CustomTooltip isDark={isDark} t={t} />}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="usage"
+                    stroke="#10B981"
+                    strokeWidth={2.5}
+                    fill="url(#usageGradientArea)"
+                    dot={{ fill: "#10B981", strokeWidth: 2, r: 3 }}
+                    activeDot={{
+                      r: 6,
+                      stroke: "#fff",
+                      strokeWidth: 2,
+                      fill: "#10B981",
+                    }}
+                  />
+                </AreaChart>
+              ) : (
+                <BarChart
+                  data={data}
+                  margin={{ top: 10, right: 15, left: -10, bottom: 0 }}
+                >
+                  <defs>
+                    <linearGradient
+                      id="usageGradientBar"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop offset="0%" stopColor="#34D399" stopOpacity={0.9} />
+                      <stop offset="100%" stopColor="#059669" stopOpacity={0.7} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke={isDark ? "#374151" : "#E5E7EB"}
+                    strokeOpacity={0.4}
+                  />
+                  <XAxis
+                    dataKey="formattedDate"
+                    tick={{
+                      fontSize: 11,
+                      fill: isDark ? "#9CA3AF" : "#6B7280",
+                    }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    tick={{
+                      fontSize: 11,
+                      fill: isDark ? "#9CA3AF" : "#6B7280",
+                    }}
+                    axisLine={false}
+                    tickLine={false}
+                    tickFormatter={(val) => {
+                      const fb = formatBytes(val, t);
+                      return `${fb.value} ${fb.unit}`;
+                    }}
+                  />
+                  <Tooltip
+                    content={<CustomTooltip isDark={isDark} t={t} />}
+                  />
+                  <Bar
+                    dataKey="usage"
+                    fill="url(#usageGradientBar)"
+                    radius={[6, 6, 0, 0]}
+                  />
+                </BarChart>
+              )}
+            </ResponsiveContainer>
+          )}
+        </Box>
+
+        {/* 3-Column Summary Stats */}
+        <Grid
+          container
+          sx={{
+            background: isDark
+              ? "rgba(255, 255, 255, 0.04)"
+              : "rgba(0, 0, 0, 0.03)",
+            borderRadius: "12px",
+            padding: "0.8rem 0.5rem",
+            textAlign: "center",
+          }}
+        >
+          {/* Total */}
+          <Grid item xs={4}>
+            <Typography sx={{ fontSize: "0.72rem", opacity: 0.65, mb: 0.3 }}>
+              {t("usageChart.totalUsage")}
+            </Typography>
+            <Typography sx={{ fontSize: "0.95rem", fontWeight: "bold" }}>
+              {summary.total.value}{" "}
+              <Typography
+                component="span"
+                sx={{ fontSize: "0.75rem", fontWeight: "normal", opacity: 0.8 }}
+              >
+                {summary.total.unit}
+              </Typography>
+            </Typography>
+          </Grid>
+
+          {/* Average */}
+          <Grid item xs={4}>
+            <Typography sx={{ fontSize: "0.72rem", opacity: 0.65, mb: 0.3 }}>
+              {t(`usageChart.${avgLabelKey}`)}
+            </Typography>
+            <Typography sx={{ fontSize: "0.95rem", fontWeight: "bold" }}>
+              {summary.avg.value}{" "}
+              <Typography
+                component="span"
+                sx={{ fontSize: "0.75rem", fontWeight: "normal", opacity: 0.8 }}
+              >
+                {summary.avg.unit}
+              </Typography>
+            </Typography>
+          </Grid>
+
+          {/* Peak */}
+          <Grid item xs={4}>
+            <Typography sx={{ fontSize: "0.72rem", opacity: 0.65, mb: 0.3 }}>
+              {t(`usageChart.${peakLabelKey}`)}
+            </Typography>
+            <Typography
+              sx={{
+                fontSize: "0.95rem",
+                fontWeight: "bold",
+                color: "#10B981",
+              }}
+            >
+              {summary.peak.value}{" "}
+              <Typography
+                component="span"
+                sx={{ fontSize: "0.75rem", fontWeight: "normal", opacity: 0.8 }}
+              >
+                {summary.peak.unit}
+              </Typography>
+            </Typography>
+          </Grid>
+        </Grid>
+      </Box>
+    </Grid>
+  );
+};
+
+export default UsageChart;

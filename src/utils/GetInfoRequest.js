@@ -47,4 +47,40 @@ export default class GetInfoRequest extends Request {
       throw error;
     }
   }
+
+  static async getUsage(period = "day", start, end) {
+    const origin =
+      import.meta.env?.VITE_PANEL_DOMAIN || window.location.origin;
+    const pathname = window.location.pathname.split("#")[0];
+    const basePath = `${origin}${pathname}`
+      .replace(/\/info\/?$/, "")
+      .replace(/\/$/, "");
+
+    const params = new URLSearchParams({ period });
+    if (start) {
+      params.append(
+        "start",
+        start instanceof Date ? start.toISOString() : start
+      );
+    }
+    if (end) {
+      params.append("end", end instanceof Date ? end.toISOString() : end);
+    }
+
+    try {
+      const response = await GetInfoRequest.send(
+        `${basePath}/usage?${params.toString()}`,
+        "GET",
+        {},
+        {
+          toastError: false,
+        }
+      );
+      return response;
+    } catch (error) {
+      console.error("Error fetching usage stats:", error);
+      throw error;
+    }
+  }
 }
+
