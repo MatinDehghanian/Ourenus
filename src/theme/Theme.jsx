@@ -115,16 +115,20 @@ const colors = {
           light: "rgba(226, 241, 239, 1)",
         },
         expired: {
-          dark: "rgba(102, 0, 0, 1)",
-          light: "rgba(255, 153, 153, 1)",
+          dark: "rgba(113, 63, 18, 0.7)",
+          light: "rgba(254, 249, 195, 1)",
+        },
+        limited: {
+          dark: "rgba(127, 29, 29, 0.7)",
+          light: "rgba(254, 226, 226, 1)",
         },
         onHold: {
-          dark: "rgba(76, 0, 153, 1)",
-          light: "rgba(204, 153, 255, 1)",
+          dark: "rgba(76, 0, 153, 0.7)",
+          light: "rgba(243, 232, 255, 1)",
         },
         disabled: {
           dark: "rgba(34, 34, 34, 1)",
-          light: "rgba(128, 128, 128, 1)",
+          light: "rgba(243, 244, 246, 1)",
         },
       },
       text: {
@@ -133,16 +137,20 @@ const colors = {
           light: "rgba(108, 185, 173, 1)",
         },
         expired: {
-          dark: "rgba(255, 255, 255, 1)",
-          light: "rgba(255, 255, 255, 1)",
+          dark: "rgba(253, 224, 71, 1)",
+          light: "rgba(161, 98, 7, 1)",
+        },
+        limited: {
+          dark: "rgba(254, 202, 202, 1)",
+          light: "rgba(220, 38, 38, 1)",
         },
         onHold: {
-          dark: "rgba(255, 255, 255, 1)",
-          light: "rgba(255, 255, 255, 1)",
+          dark: "rgba(233, 213, 255, 1)",
+          light: "rgba(147, 51, 234, 1)",
         },
         disabled: {
-          dark: "rgba(255, 255, 255, 1)",
-          light: "rgba(77, 77, 77, 1)",
+          dark: "rgba(156, 163, 175, 1)",
+          light: "rgba(107, 114, 128, 1)",
         },
       },
     },

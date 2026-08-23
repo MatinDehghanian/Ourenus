@@ -38,8 +38,9 @@ const UserBox = ({ data, subLink }) => {
       case "active":
         return theme.colors.userBox.statusBtn.btn.active[theme.palette.mode];
       case "expired":
-      case "limited":
         return theme.colors.userBox.statusBtn.btn.expired[theme.palette.mode];
+      case "limited":
+        return theme.colors.userBox.statusBtn.btn.limited[theme.palette.mode];
       case "on_hold":
         return theme.colors.userBox.statusBtn.btn.onHold[theme.palette.mode];
       case "disabled":
@@ -54,14 +55,32 @@ const UserBox = ({ data, subLink }) => {
       case "active":
         return theme.colors.userBox.statusBtn.text.active[theme.palette.mode];
       case "expired":
-      case "limited":
         return theme.colors.userBox.statusBtn.text.expired[theme.palette.mode];
+      case "limited":
+        return theme.colors.userBox.statusBtn.text.limited[theme.palette.mode];
       case "on_hold":
         return theme.colors.userBox.statusBtn.text.onHold[theme.palette.mode];
       case "disabled":
         return theme.colors.userBox.statusBtn.text.disabled[theme.palette.mode];
       default:
         return theme.palette.text.primary;
+    }
+  };
+
+  const getStatusShadow = (status) => {
+    switch (status) {
+      case "active":
+        return "0 0 6px 0px rgba(34, 197, 94, 0.4)";
+      case "expired":
+        return "0 0 6px 0px rgba(234, 179, 8, 0.4)";
+      case "limited":
+        return "0 0 6px 0px rgba(239, 68, 68, 0.4)";
+      case "on_hold":
+        return "0 0 6px 0px rgba(168, 85, 247, 0.4)";
+      case "disabled":
+        return "0 0 6px 0px rgba(156, 163, 175, 0.4)";
+      default:
+        return "0 0 3px 0px #99bbaf";
     }
   };
 
@@ -161,11 +180,12 @@ const UserBox = ({ data, subLink }) => {
                   backgroundColor: getStatusBackgroundColor(statusData),
                   color: getStatusTextColor(statusData),
                   textTransform: "capitalize",
-                  boxShadow: "0 0 3px 0px #99bbaf",
+                  boxShadow: getStatusShadow(statusData),
                   width: "90%",
                   fontWeight: "bold",
                   textWrap: "nowrap",
                   fontSize: "small",
+                  transition: "all 0.3s ease",
                 }}
               >
                 {t(`status.${statusData}`)}
