@@ -197,7 +197,7 @@ function App() {
                   />
                 )}
                 {isOffSections.chartBox !== false && isOffSections.usageChart !== false && (
-                  <UsageChart />
+                  <UsageChart userData={data} />
                 )}
                 {isOffSections.appsBox && (
                   <Apps subLink={getAdjustedUrl(

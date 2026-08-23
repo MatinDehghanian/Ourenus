@@ -61,6 +61,7 @@
     "all": "All",
     "loading": "Loading chart...",
     "noData": "No usage data available",
+    "noUsageYet": "No usage yet",
     "retry": "Retry",
     "area": "Area",
     "bar": "Bar",

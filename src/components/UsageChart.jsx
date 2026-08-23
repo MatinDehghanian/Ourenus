@@ -11,6 +11,7 @@ import {
 import ShowChartIcon from "@mui/icons-material/ShowChart";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import RefreshIcon from "@mui/icons-material/Refresh";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import { useTranslation } from "react-i18next";
 import {
   ResponsiveContainer,
@@ -148,7 +149,7 @@ const CustomTooltip = ({ active, payload, isDark, t }) => {
   return null;
 };
 
-const UsageChart = () => {
+const UsageChart = ({ userData }) => {
   const theme = useTheme();
   const { t, i18n } = useTranslation();
   const isDark = theme.palette.mode === "dark";
@@ -170,7 +171,27 @@ const UsageChart = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Check if user is on hold or has 0 lifetime used traffic
+  const isOnHoldOrNoUsage = useMemo(() => {
+    if (!userData) return false;
+    const isHold =
+      userData.status === "on_hold" ||
+      userData.activated === null;
+    const isZeroTraffic =
+      (userData.lifetime_used_traffic !== undefined &&
+        userData.lifetime_used_traffic === 0) ||
+      (userData.lifetime_used_traffic === undefined &&
+        userData.used_traffic === 0);
+    return isHold || isZeroTraffic;
+  }, [userData]);
+
   const fetchStats = useCallback(async () => {
+    if (isOnHoldOrNoUsage) {
+      setData([]);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {
@@ -201,14 +222,14 @@ const UsageChart = () => {
     } finally {
       setLoading(false);
     }
-  }, [period, lang, t]);
+  }, [period, lang, t, isOnHoldOrNoUsage]);
 
   useEffect(() => {
     fetchStats();
   }, [fetchStats]);
 
   const summary = useMemo(() => {
-    if (!data.length) {
+    if (!data.length || isOnHoldOrNoUsage) {
       return {
         total: { value: "0", unit: t("B") },
         avg: { value: "0", unit: t("B") },
@@ -224,7 +245,7 @@ const UsageChart = () => {
       avg: formatBytes(avgBytes, t),
       peak: formatBytes(peakBytes, t),
     };
-  }, [data, t]);
+  }, [data, t, isOnHoldOrNoUsage]);
 
   const descriptionKey = useMemo(() => {
     switch (period) {
@@ -295,10 +316,15 @@ const UsageChart = () => {
               borderRadius: "50px",
               padding: "2px",
               gap: "2px",
+              ...(isOnHoldOrNoUsage && {
+                opacity: 0.5,
+                cursor: "not-allowed",
+              }),
             }}
           >
             <Button
               size="small"
+              disabled={isOnHoldOrNoUsage}
               onClick={() => setChartType("area")}
               sx={{
                 borderRadius: "50px",
@@ -320,6 +346,9 @@ const UsageChart = () => {
                       ? "rgba(255, 255, 255, 0.1)"
                       : "rgba(0, 0, 0, 0.08)",
                 },
+                ...(isOnHoldOrNoUsage && {
+                  pointerEvents: "none",
+                }),
               }}
             >
               <ShowChartIcon sx={{ fontSize: "1.1rem", marginInlineEnd: "4px" }} />
@@ -327,6 +356,7 @@ const UsageChart = () => {
             </Button>
             <Button
               size="small"
+              disabled={isOnHoldOrNoUsage}
               onClick={() => setChartType("bar")}
               sx={{
                 borderRadius: "50px",
@@ -348,6 +378,9 @@ const UsageChart = () => {
                       ? "rgba(255, 255, 255, 0.1)"
                       : "rgba(0, 0, 0, 0.08)",
                 },
+                ...(isOnHoldOrNoUsage && {
+                  pointerEvents: "none",
+                }),
               }}
             >
               <BarChartIcon sx={{ fontSize: "1.1rem", marginInlineEnd: "4px" }} />
@@ -364,6 +397,9 @@ const UsageChart = () => {
             gap: "0.4rem",
             marginBottom: "0.6rem",
             flexWrap: "wrap",
+            ...(isOnHoldOrNoUsage && {
+              opacity: 0.5,
+            }),
           }}
         >
           <Typography
@@ -392,6 +428,7 @@ const UsageChart = () => {
               <Button
                 key={p}
                 size="small"
+                disabled={isOnHoldOrNoUsage}
                 onClick={() => setPeriod(p)}
                 sx={{
                   borderRadius: "50px",
@@ -415,6 +452,9 @@ const UsageChart = () => {
                       ? "rgba(255, 255, 255, 0.12)"
                       : "rgba(0, 0, 0, 0.08)",
                   },
+                  ...(isOnHoldOrNoUsage && {
+                    pointerEvents: "none",
+                  }),
                 }}
               >
                 {t(`usageChart.${periodKey}`)}
@@ -453,7 +493,46 @@ const UsageChart = () => {
             direction: "ltr",
           }}
         >
-          {loading ? (
+          {isOnHoldOrNoUsage ? (
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "0.8rem",
+                paddingY: "2.5rem",
+                textAlign: "center",
+                direction: isRtl ? "rtl" : "ltr",
+              }}
+            >
+              <Box
+                sx={{
+                  width: 50,
+                  height: 50,
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  background: isDark
+                    ? "rgba(143, 141, 179, 0.15)"
+                    : "rgba(72, 76, 112, 0.1)",
+                  color: brandMain,
+                }}
+              >
+                <LockOutlinedIcon sx={{ fontSize: "1.6rem" }} />
+              </Box>
+              <Typography
+                sx={{
+                  fontSize: "0.95rem",
+                  fontWeight: "bold",
+                  opacity: 0.85,
+                }}
+              >
+                {t("usageChart.noUsageYet")}
+              </Typography>
+            </Box>
+          ) : loading ? (
             <Box
               sx={{
                 display: "flex",
