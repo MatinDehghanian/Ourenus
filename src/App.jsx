@@ -196,9 +196,11 @@ function App() {
                     )}
                   />
                 )}
-                {isOffSections.chartBox !== false && isOffSections.usageChart !== false && (
-                  <UsageChart userData={data} />
-                )}
+                {isOffSections.chartBox !== false &&
+                  isOffSections.usageChart !== false &&
+                  data?.supports_usage_chart && (
+                    <UsageChart userData={data} />
+                  )}
                 {isOffSections.appsBox && (
                   <Apps subLink={getAdjustedUrl(
                     data?.subscription_url || window.location.pathname.split("#")[0]

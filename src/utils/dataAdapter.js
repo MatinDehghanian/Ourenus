@@ -49,6 +49,8 @@ export function normalizeUserData(rawData) {
   if (!isNewApiFormat(rawData)) {
     return {
       ...rawData,
+      is_pasarguard: false,
+      supports_usage_chart: false,
       // Ensure subscription_url always exists
       subscription_url:
         rawData.subscription_url || deriveSubscriptionUrl(),
@@ -57,6 +59,8 @@ export function normalizeUserData(rawData) {
 
   // --- New API format ---
   return {
+    is_pasarguard: true,
+    supports_usage_chart: true,
     // Identity
     id: rawData.id,
     username: rawData.username,

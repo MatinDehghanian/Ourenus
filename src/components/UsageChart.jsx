@@ -152,6 +152,7 @@ const CustomTooltip = ({ active, payload, isDark, t }) => {
 const UsageChart = ({ userData }) => {
   const theme = useTheme();
   const { t, i18n } = useTranslation();
+
   const isDark = theme.palette.mode === "dark";
   const lang = i18n.language;
   const isRtl = lang === "fa";
@@ -186,7 +187,7 @@ const UsageChart = ({ userData }) => {
   }, [userData]);
 
   const fetchStats = useCallback(async () => {
-    if (isOnHoldOrNoUsage) {
+    if (isOnHoldOrNoUsage || (userData && userData.supports_usage_chart === false)) {
       setData([]);
       setLoading(false);
       return;
@@ -222,7 +223,7 @@ const UsageChart = ({ userData }) => {
     } finally {
       setLoading(false);
     }
-  }, [period, lang, t, isOnHoldOrNoUsage]);
+  }, [period, lang, t, isOnHoldOrNoUsage, userData]);
 
   useEffect(() => {
     fetchStats();
@@ -273,6 +274,11 @@ const UsageChart = ({ userData }) => {
     if (period === "12M" || period === "All") return "peakMonth";
     return "peakDay";
   }, [period]);
+
+  // If user is from legacy API that doesn't support usage chart endpoint, don't render
+  if (userData && userData.supports_usage_chart === false) {
+    return null;
+  }
 
   return (
     <Grid item container justifyContent="space-around" xs={11}>
