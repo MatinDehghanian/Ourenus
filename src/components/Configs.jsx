@@ -23,6 +23,12 @@ import DownloadIcon from "@mui/icons-material/Download";
 import { useTranslation } from "react-i18next";
 import QrModal from "./QrModal";
 
+const protocolLogos = {
+  OpenVPN: "https://cdn.simpleicons.org/openvpn/EA7E20",
+  WireGuard: "https://cdn.simpleicons.org/wireguard/88171A",
+  "Cisco AnyConnect": "https://cdn.simpleicons.org/cisco/1BA0D7",
+};
+
 const Configs = ({
   title,
   icon,
@@ -152,20 +158,30 @@ const Configs = ({
                     flexWrap="nowrap"
                     gap=".5rem"
                   >
-                    <Grid item sx={{ minWidth: 0 }}>
-                      <Typography>{profile.name}</Typography>
-                      <Typography variant="caption" display="block">
-                        {profile.protocol}
-                      </Typography>
-                      {profile.details && (
-                        <Typography
-                          component="pre"
-                          variant="caption"
-                          sx={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere", margin: 0 }}
-                        >
-                          {profile.details}
-                        </Typography>
+                    <Grid item display="flex" alignItems="flex-start" gap=".6rem" sx={{ minWidth: 0 }}>
+                      {protocolLogos[profile.protocol] && (
+                        <img
+                          src={protocolLogos[profile.protocol]}
+                          alt={`${profile.protocol} logo`}
+                          width="28"
+                          height="28"
+                        />
                       )}
+                      <Grid item sx={{ minWidth: 0 }}>
+                        <Typography>{profile.name}</Typography>
+                        <Typography variant="caption" display="block">
+                          {profile.protocol}
+                        </Typography>
+                        {profile.details && (
+                          <Typography
+                            component="pre"
+                            variant="caption"
+                            sx={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere", margin: 0 }}
+                          >
+                            {profile.details}
+                          </Typography>
+                        )}
+                      </Grid>
                     </Grid>
                     <Grid item display="flex" gap=".5rem">
                       {profile.downloadUrl && (
