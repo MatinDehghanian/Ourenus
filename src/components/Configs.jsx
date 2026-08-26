@@ -158,7 +158,7 @@ const Configs = ({
                     flexWrap="nowrap"
                     gap=".5rem"
                   >
-                    <Grid item display="flex" alignItems="flex-start" gap=".6rem" sx={{ minWidth: 0 }}>
+                    <Grid item display="flex" alignItems="center" gap=".6rem" sx={{ minWidth: 0 }}>
                       {protocolLogos[profile.protocol] && (
                         <img
                           src={protocolLogos[profile.protocol]}
