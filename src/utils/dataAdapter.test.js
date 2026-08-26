@@ -33,6 +33,8 @@ test("normalizes Rebecca subscription info and usage", () => {
 });
 
 test("normalizes every Rebecca VPN protocol", () => {
+  assert.deepEqual(normalizeRebeccaProfiles({ username: "legacy" }), []);
+
   const profiles = normalizeRebeccaProfiles({
     user: { username: "alice" },
     openvpn: {

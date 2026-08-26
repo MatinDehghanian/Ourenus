@@ -152,68 +152,92 @@ const Configs = ({
                 <ListItem key={`${profile.protocol}-${profile.name}-${index}`} sx={liStyle}>
                   <Grid
                     item
-                    container
-                    justifyContent="space-between"
-                    alignItems="center"
-                    flexWrap="nowrap"
-                    gap=".5rem"
+                    component={profile.details ? "details" : "div"}
+                    sx={{ width: "100%" }}
                   >
-                    <Grid item display="flex" alignItems="center" gap=".6rem" sx={{ minWidth: 0 }}>
-                      {protocolLogos[profile.protocol] && (
-                        <img
-                          src={protocolLogos[profile.protocol]}
-                          alt={`${profile.protocol} logo`}
-                          width="28"
-                          height="28"
-                        />
-                      )}
-                      <Grid item sx={{ minWidth: 0 }}>
-                        <Typography>{profile.name}</Typography>
-                        {!profile.details && (
-                          <Typography variant="caption" display="block">
-                            {profile.protocol}
-                          </Typography>
+                    <Grid
+                      container
+                      component={profile.details ? "summary" : "div"}
+                      justifyContent="space-between"
+                      alignItems="center"
+                      flexWrap="nowrap"
+                      gap=".5rem"
+                      sx={profile.details ? { cursor: "pointer", listStyle: "none" } : undefined}
+                    >
+                      <Grid item display="flex" alignItems="center" gap=".6rem" sx={{ minWidth: 0 }}>
+                        {protocolLogos[profile.protocol] && (
+                          <img
+                            src={protocolLogos[profile.protocol]}
+                            alt={`${profile.protocol} logo`}
+                            width="28"
+                            height="28"
+                          />
+                        )}
+                        <Grid item sx={{ minWidth: 0 }}>
+                          <Typography>{profile.name}</Typography>
+                          {!profile.details && (
+                            <Typography variant="caption" display="block">
+                              {profile.protocol}
+                            </Typography>
+                          )}
+                        </Grid>
+                      </Grid>
+                      <Grid item display="flex" gap=".5rem">
+                        {profile.downloadUrl && (
+                          <IconButton
+                            component="a"
+                            href={profile.downloadUrl}
+                            aria-label={t("download")}
+                            sx={{ ...btnStyle, color: "inherit" }}
+                          >
+                            <DownloadIcon fontSize="large" />
+                          </IconButton>
+                        )}
+                        {profile.qrValue && (
+                          <IconButton
+                            aria-label="QR"
+                            onClick={() =>
+                              handleOpen(profile.name, profile.qrValue, index)
+                            }
+                            sx={btnStyle}
+                          >
+                            <QrCodeIcon fontSize="large" />
+                          </IconButton>
+                        )}
+                        {(profile.details || profile.qrValue) && (
+                          <IconButton
+                            aria-label="Copy"
+                            sx={btnStyle}
+                            onClick={(event) => {
+                              event.preventDefault();
+                              event.stopPropagation();
+                              handleCopyToClipboard(
+                                profile.details || profile.qrValue,
+                                index,
+                                t
+                              );
+                            }}
+                          >
+                            <ContentCopyIcon fontSize="large" />
+                          </IconButton>
                         )}
                       </Grid>
                     </Grid>
-                    <Grid item display="flex" gap=".5rem">
-                      {profile.downloadUrl && (
-                        <IconButton
-                          component="a"
-                          href={profile.downloadUrl}
-                          aria-label={t("download")}
-                          sx={{ ...btnStyle, color: "inherit" }}
-                        >
-                          <DownloadIcon fontSize="large" />
-                        </IconButton>
-                      )}
-                      {profile.qrValue && (
-                        <IconButton
-                          aria-label="QR"
-                          onClick={() =>
-                            handleOpen(profile.name, profile.qrValue, index)
-                          }
-                          sx={btnStyle}
-                        >
-                          <QrCodeIcon fontSize="large" />
-                        </IconButton>
-                      )}
-                      {(profile.details || profile.qrValue) && (
-                        <IconButton
-                          aria-label="Copy"
-                          sx={btnStyle}
-                          onClick={() =>
-                            handleCopyToClipboard(
-                              profile.details || profile.qrValue,
-                              index,
-                              t
-                            )
-                          }
-                        >
-                          <ContentCopyIcon fontSize="large" />
-                        </IconButton>
-                      )}
-                    </Grid>
+                    {profile.details && (
+                      <Typography
+                        component="pre"
+                        variant="caption"
+                        sx={{
+                          borderTop: "1px solid rgba(255, 255, 255, 0.2)",
+                          margin: ".6rem 0 0",
+                          paddingTop: ".6rem",
+                          whiteSpace: "pre-wrap",
+                          overflowWrap: "anywhere",
+                        }}
+                      >
+                        {profile.details}
+                      </Typography>
+                    )}
                   </Grid>
                 </ListItem>
               ))}
