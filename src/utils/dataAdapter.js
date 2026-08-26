@@ -23,7 +23,13 @@ function isNewApiFormat(data) {
 }
 
 function isRebeccaApiFormat(data) {
-  return data?.user && typeof data.user === "object";
+  return (
+    data?.user &&
+    typeof data.user === "object" &&
+    ["openvpn", "wireguard", "l2tp", "pptp", "ikev2", "anyconnect"].some(
+      (key) => key in data
+    )
+  );
 }
 
 /**
@@ -122,9 +128,7 @@ export function normalizeUsageData(rawData, preferHourly = false) {
   const stats = rawData?.stats;
   let items;
 
-  if (Array.isArray(stats)) {
-    items = stats;
-  } else if (stats && typeof stats === "object") {
+  if (stats && typeof stats === "object" && !Array.isArray(stats)) {
     items = stats[-1] || Object.values(stats)[0] || [];
   } else if (preferHourly && rawData?.hourly_usages?.length) {
     items = rawData.hourly_usages;

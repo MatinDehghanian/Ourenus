@@ -8,6 +8,7 @@ import {
 
 test("normalizes Rebecca subscription info and usage", () => {
   const user = normalizeUserData({
+    openvpn: { profiles: [] },
     user: {
       username: "alice",
       status: "active",
@@ -34,6 +35,7 @@ test("normalizes Rebecca subscription info and usage", () => {
 
 test("normalizes every Rebecca VPN protocol", () => {
   assert.deepEqual(normalizeRebeccaProfiles({ username: "legacy" }), []);
+  assert.deepEqual(normalizeRebeccaProfiles({ user: { username: "wrapped" } }), []);
 
   const profiles = normalizeRebeccaProfiles({
     user: { username: "alice" },
@@ -71,4 +73,39 @@ test("normalizes every Rebecca VPN protocol", () => {
   assert.equal(profiles[0].downloadUrl, "/ov/edge.ovpn");
   assert.equal(profiles[1].qrValue, "wireguard://profile");
   assert.match(profiles[2].details, /IPSec PSK: shared-secret/);
+});
+
+test("keeps other supported API formats out of Rebecca paths", () => {
+  globalThis.window = {
+    location: { origin: "https://panel.example", pathname: "/sub/token" },
+  };
+  const legacy = normalizeUserData({
+    username: "legacy",
+    used_traffic: 10,
+    data_limit: 100,
+    links: ["vless://legacy"],
+  });
+  const current = normalizeUserData({
+    id: 7,
+    username: "current",
+    proxy_settings: {},
+    lifetime_used_traffic: 20,
+  });
+
+  assert.equal(legacy.is_rebecca, undefined);
+  assert.equal(legacy.supports_usage_chart, false);
+  assert.deepEqual(legacy.links, ["vless://legacy"]);
+  assert.equal(current.is_rebecca, undefined);
+  assert.equal(current.is_pasarguard, true);
+  assert.deepEqual(normalizeRebeccaProfiles(current), []);
+  assert.deepEqual(normalizeUsageData({ stats: [] }), []);
+  assert.deepEqual(
+    normalizeUsageData({
+      stats: {
+        [-1]: [{ period_start: "2026-08-26", total_traffic: 512 }],
+      },
+    }),
+    [{ timestamp: "2026-08-26", usedTraffic: 512 }]
+  );
+  delete globalThis.window;
 });

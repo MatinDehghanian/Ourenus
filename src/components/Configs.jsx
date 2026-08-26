@@ -98,10 +98,7 @@ const Configs = ({
           <AccordionDetails>
             <List>
               {filteredLinks?.map((config, index) => {
-                const title =
-                  extractNameFromConfigURL(config) ||
-                  config.split("://")[0]?.toUpperCase() ||
-                  `${t("configuration")} ${index + 1}`;
+                const title = extractNameFromConfigURL(config);
                 return (
                   <ListItem
                     key={index}
@@ -242,25 +239,23 @@ const Configs = ({
                 </ListItem>
               ))}
             </List>
-            {copyValues.length > 0 && (
-              <Button
-                onClick={() =>
-                  handleCopyToClipboard(copyValues.join("\n"), -1, t)
-                }
-                sx={{
-                  width: "100%",
-                  background: theme.colors.glassColor,
-                  color: "#000",
-                  borderRadius: "16px",
-                  border: "1px solid #48444a4f",
-                  "&:hover": {
-                    background: "rgba(0, 0, 0, 0.1)",
-                  },
-                }}
-              >
-                {t("copyAll")}
-              </Button>
-            )}
+            <Button
+              onClick={() =>
+                handleCopyToClipboard(copyValues.join("\n"), -1, t)
+              }
+              sx={{
+                width: "100%",
+                background: theme.colors.glassColor,
+                color: "#000",
+                borderRadius: "16px",
+                border: "1px solid #48444a4f",
+                "&:hover": {
+                  background: "rgba(0, 0, 0, 0.1)",
+                },
+              }}
+            >
+              {t("copyAll")}
+            </Button>
           </AccordionDetails>
         </Accordion>
       </Grid>

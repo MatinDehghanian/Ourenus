@@ -199,13 +199,26 @@ const UsageChart = ({ userData }) => {
     try {
       const { startDate, endDate, apiPeriod } = calculateDateRange(period);
       const res = await GetInfoRequest.getUsage(apiPeriod, startDate, endDate);
-      const statsList = normalizeUsageData(res?.data, period === "24H");
-      const hasUsage = statsList.some((item) => item.usedTraffic > 0);
+      const rawStats = res?.data?.stats;
+      const statsList = userData?.is_rebecca
+        ? normalizeUsageData(res?.data, period === "24H")
+        : rawStats && typeof rawStats === "object" && !Array.isArray(rawStats)
+          ? rawStats[-1] || Object.values(rawStats)[0] || []
+          : [];
+      const hasUsage = statsList.some((item) =>
+        userData?.is_rebecca
+          ? item.usedTraffic > 0
+          : (item.total_traffic || 0) > 0
+      );
 
       if (statsList.length && (!userData?.is_rebecca || hasUsage)) {
         const formatted = statsList.map((item) => {
-          const d = new Date(item.timestamp);
-          const bytes = item.usedTraffic;
+          const d = new Date(
+            userData?.is_rebecca ? item.timestamp : item.period_start
+          );
+          const bytes = userData?.is_rebecca
+            ? item.usedTraffic
+            : item.total_traffic || 0;
           const fb = formatBytes(bytes, t);
           return {
             date: d.toISOString().split("T")[0],
