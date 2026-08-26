@@ -4,6 +4,7 @@ import {
   AccordionSummary,
   Button,
   Grid,
+  IconButton,
   List,
   ListItem,
   Typography,
@@ -18,6 +19,7 @@ import {
 } from "../utils/Helper";
 import QrCodeIcon from "@mui/icons-material/QrCode";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import DownloadIcon from "@mui/icons-material/Download";
 import { useTranslation } from "react-i18next";
 import QrModal from "./QrModal";
 
@@ -26,17 +28,19 @@ const Configs = ({
   icon,
   style,
   configs,
+  profiles,
   iconColor,
   btnStyle,
   liStyle,
   isFirst,
 }) => {
   const filteredLinks = useMemo(() => {
+    const profileLinks = new Set(profiles.map((profile) => profile.qrValue));
     if (configs && configs[configs.length - 1] === "False") {
-      return configs.slice(0, -1);
+      return configs.slice(0, -1).filter((link) => !profileLinks.has(link));
     }
-    return configs || [];
-  }, [configs]);
+    return (configs || []).filter((link) => !profileLinks.has(link));
+  }, [configs, profiles]);
 
   const { t } = useTranslation();
   const theme = useTheme();
@@ -55,6 +59,10 @@ const Configs = ({
   const handleClose = () => setOpen(false);
 
   const isFirstPadding = isFirst && { paddingTop: "1rem" };
+  const copyValues = [
+    ...filteredLinks,
+    ...profiles.map((profile) => profile.details || profile.qrValue).filter(Boolean),
+  ];
 
   return (
     <>
@@ -84,7 +92,10 @@ const Configs = ({
           <AccordionDetails>
             <List>
               {filteredLinks?.map((config, index) => {
-                const title = extractNameFromConfigURL(config);
+                const title =
+                  extractNameFromConfigURL(config) ||
+                  config.split("://")[0]?.toUpperCase() ||
+                  `${t("configuration")} ${index + 1}`;
                 return (
                   <ListItem
                     key={index}
@@ -131,24 +142,92 @@ const Configs = ({
                   </ListItem>
                 );
               })}
+              {profiles.map((profile, index) => (
+                <ListItem key={`${profile.protocol}-${profile.name}-${index}`} sx={liStyle}>
+                  <Grid
+                    item
+                    container
+                    justifyContent="space-between"
+                    alignItems="center"
+                    flexWrap="nowrap"
+                    gap=".5rem"
+                  >
+                    <Grid item sx={{ minWidth: 0 }}>
+                      <Typography>{profile.name}</Typography>
+                      <Typography variant="caption" display="block">
+                        {profile.protocol}
+                      </Typography>
+                      {profile.details && (
+                        <Typography
+                          component="pre"
+                          variant="caption"
+                          sx={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere", margin: 0 }}
+                        >
+                          {profile.details}
+                        </Typography>
+                      )}
+                    </Grid>
+                    <Grid item display="flex" gap=".5rem">
+                      {profile.downloadUrl && (
+                        <IconButton
+                          component="a"
+                          href={profile.downloadUrl}
+                          aria-label={t("download")}
+                          sx={{ ...btnStyle, color: "inherit" }}
+                        >
+                          <DownloadIcon fontSize="large" />
+                        </IconButton>
+                      )}
+                      {profile.qrValue && (
+                        <IconButton
+                          aria-label="QR"
+                          onClick={() =>
+                            handleOpen(profile.name, profile.qrValue, index)
+                          }
+                          sx={btnStyle}
+                        >
+                          <QrCodeIcon fontSize="large" />
+                        </IconButton>
+                      )}
+                      {(profile.details || profile.qrValue) && (
+                        <IconButton
+                          aria-label="Copy"
+                          sx={btnStyle}
+                          onClick={() =>
+                            handleCopyToClipboard(
+                              profile.details || profile.qrValue,
+                              index,
+                              t
+                            )
+                          }
+                        >
+                          <ContentCopyIcon fontSize="large" />
+                        </IconButton>
+                      )}
+                    </Grid>
+                  </Grid>
+                </ListItem>
+              ))}
             </List>
-            <Button
-              onClick={() =>
-                handleCopyToClipboard(filteredLinks.join("\n"), -1, t)
-              }
-              sx={{
-                width: "100%",
-                background: theme.colors.glassColor,
-                color: "#000",
-                borderRadius: "16px",
-                border: "1px solid #48444a4f",
-                "&:hover": {
-                  background: "rgba(0, 0, 0, 0.1)",
-                },
-              }}
-            >
-              {t("copyAll")}
-            </Button>
+            {copyValues.length > 0 && (
+              <Button
+                onClick={() =>
+                  handleCopyToClipboard(copyValues.join("\n"), -1, t)
+                }
+                sx={{
+                  width: "100%",
+                  background: theme.colors.glassColor,
+                  color: "#000",
+                  borderRadius: "16px",
+                  border: "1px solid #48444a4f",
+                  "&:hover": {
+                    background: "rgba(0, 0, 0, 0.1)",
+                  },
+                }}
+              >
+                {t("copyAll")}
+              </Button>
+            )}
           </AccordionDetails>
         </Accordion>
       </Grid>
@@ -170,9 +249,22 @@ Configs.propTypes = {
   icon: PropTypes.element.isRequired,
   style: PropTypes.object,
   configs: PropTypes.arrayOf(PropTypes.string).isRequired,
+  profiles: PropTypes.arrayOf(
+    PropTypes.shape({
+      protocol: PropTypes.string.isRequired,
+      name: PropTypes.string.isRequired,
+      downloadUrl: PropTypes.string,
+      qrValue: PropTypes.string,
+      details: PropTypes.string,
+    })
+  ),
   iconColor: PropTypes.string,
   liStyle: PropTypes.object,
   isFirst: PropTypes.bool,
+};
+
+Configs.defaultProps = {
+  profiles: [],
 };
 
 export default Configs;

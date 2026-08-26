@@ -139,3 +139,56 @@ export function normalizeUsageData(rawData, preferHourly = false) {
     }))
     .filter((item) => item.timestamp);
 }
+
+export function normalizeRebeccaProfiles(rawData) {
+  if (!isRebeccaApiFormat(rawData)) return [];
+
+  const profiles = [];
+  const addDownloadProfiles = (protocol, items = []) => {
+    items.forEach((item, index) => {
+      profiles.push({
+        protocol,
+        name:
+          item.host_name ||
+          item.remark ||
+          item.filename ||
+          `${protocol} ${index + 1}`,
+        downloadUrl: item.download_url,
+        qrValue: item.link,
+      });
+    });
+  };
+
+  addDownloadProfiles("OpenVPN", rawData.openvpn?.profiles);
+  addDownloadProfiles("WireGuard", rawData.wireguard?.profiles);
+
+  const remoteProtocols = {
+    l2tp: "L2TP/IPsec",
+    pptp: "PPTP",
+    ikev2: "IKEv2",
+    anyconnect: "Cisco AnyConnect",
+  };
+  Object.entries(remoteProtocols).forEach(([key, protocol]) => {
+    (rawData[key] || []).forEach((item, index) => {
+      const fields = [
+        ["Server", item.server],
+        ["Port", item.port],
+        ["Username", item.username],
+        ["Password", item.password],
+        ["Auth mode", item.auth_mode],
+        ["IPSec PSK", item.ipsec_psk],
+        ["IKE port", item.ike_port],
+        ["NAT-T port", item.natt_port],
+        ["Tunnel port", item.tunnel_port],
+        ["DNS", item.dns?.join(", ")],
+      ].filter(([, value]) => value !== undefined && value !== null && value !== "");
+      profiles.push({
+        protocol,
+        name: item.host_name || item.remark || `${protocol} ${index + 1}`,
+        details: fields.map(([label, value]) => `${label}: ${value}`).join("\n"),
+      });
+    });
+  });
+
+  return profiles;
+}

@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { normalizeUsageData, normalizeUserData } from "./dataAdapter.js";
+import {
+  normalizeRebeccaProfiles,
+  normalizeUsageData,
+  normalizeUserData,
+} from "./dataAdapter.js";
 
 test("normalizes Rebecca subscription info and usage", () => {
   const user = normalizeUserData({
@@ -26,4 +30,43 @@ test("normalizes Rebecca subscription info and usage", () => {
     [{ timestamp: "2026-08-26", usedTraffic: 4096 }]
   );
   assert.deepEqual(normalizeUsageData({ usages: [], hourly_usages: [] }), []);
+});
+
+test("normalizes every Rebecca VPN protocol", () => {
+  const profiles = normalizeRebeccaProfiles({
+    user: { username: "alice" },
+    openvpn: {
+      profiles: [{ remark: "OV Edge", download_url: "/ov/edge.ovpn" }],
+    },
+    wireguard: {
+      profiles: [
+        {
+          host_name: "WG Edge",
+          download_url: "/wg/edge.conf",
+          link: "wireguard://profile",
+        },
+      ],
+    },
+    l2tp: [
+      {
+        host_name: "L2TP Edge",
+        server: "l2tp.example.com",
+        port: 1701,
+        username: "alice",
+        password: "secret",
+        ipsec_psk: "shared-secret",
+      },
+    ],
+    pptp: [{ server: "pptp.example.com", port: 1723 }],
+    ikev2: [{ server: "ike.example.com", port: 500 }],
+    anyconnect: [{ server: "cisco.example.com", port: 443 }],
+  });
+
+  assert.deepEqual(
+    profiles.map(({ protocol }) => protocol),
+    ["OpenVPN", "WireGuard", "L2TP/IPsec", "PPTP", "IKEv2", "Cisco AnyConnect"]
+  );
+  assert.equal(profiles[0].downloadUrl, "/ov/edge.ovpn");
+  assert.equal(profiles[1].qrValue, "wireguard://profile");
+  assert.match(profiles[2].details, /IPSec PSK: shared-secret/);
 });

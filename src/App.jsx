@@ -19,6 +19,7 @@ import {
 import { ToastContainer } from "react-toastify";
 import RadioButtons from "./components/RadioButtons";
 import { Helmet } from "react-helmet";
+import { normalizeRebeccaProfiles } from "./utils/dataAdapter";
 
 function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -34,6 +35,7 @@ function App() {
   };
 
   const [dataLinks, setDataLinks] = useState([]);
+  const vpnProfiles = useMemo(() => normalizeRebeccaProfiles(data), [data]);
 
   useEffect(() => {
     GetInfoRequest.getInfo()
@@ -237,6 +239,7 @@ function App() {
                       />
                     }
                     configs={dataLinks}
+                    profiles={vpnProfiles}
                     btnStyle={{
                       cursor: "pointer",
                       borderRadius: "30%",
