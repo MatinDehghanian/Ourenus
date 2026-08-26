@@ -169,16 +169,9 @@ const Configs = ({
                       )}
                       <Grid item sx={{ minWidth: 0 }}>
                         <Typography>{profile.name}</Typography>
-                        <Typography variant="caption" display="block">
-                          {profile.protocol}
-                        </Typography>
-                        {profile.details && (
-                          <Typography
-                            component="pre"
-                            variant="caption"
-                            sx={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere", margin: 0 }}
-                          >
-                            {profile.details}
+                        {!profile.details && (
+                          <Typography variant="caption" display="block">
+                            {profile.protocol}
                           </Typography>
                         )}
                       </Grid>
