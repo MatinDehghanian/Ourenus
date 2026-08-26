@@ -26,6 +26,7 @@ import {
 } from "recharts";
 import GetInfoRequest from "../utils/GetInfoRequest";
 import { formatBytes } from "../utils/Helper";
+import { normalizeUsageData } from "../utils/dataAdapter";
 
 const PERIODS = ["24H", "7D", "30D", "12M", "All"];
 
@@ -174,7 +175,7 @@ const UsageChart = ({ userData }) => {
 
   // Check if user is on hold or has 0 lifetime used traffic
   const isOnHoldOrNoUsage = useMemo(() => {
-    if (!userData) return false;
+    if (!userData || userData.is_rebecca) return false;
     const isHold =
       userData.status === "on_hold" ||
       userData.activated === null;
@@ -199,12 +200,25 @@ const UsageChart = ({ userData }) => {
       const { startDate, endDate, apiPeriod } = calculateDateRange(period);
       const res = await GetInfoRequest.getUsage(apiPeriod, startDate, endDate);
       const rawStats = res?.data?.stats;
+      const statsList = userData?.is_rebecca
+        ? normalizeUsageData(res?.data, period === "24H")
+        : rawStats && typeof rawStats === "object" && !Array.isArray(rawStats)
+          ? rawStats[-1] || Object.values(rawStats)[0] || []
+          : [];
+      const hasUsage = statsList.some((item) =>
+        userData?.is_rebecca
+          ? item.usedTraffic > 0
+          : (item.total_traffic || 0) > 0
+      );
 
-      if (rawStats && typeof rawStats === "object" && !Array.isArray(rawStats)) {
-        const statsList = rawStats[-1] || Object.values(rawStats)[0] || [];
+      if (statsList.length && (!userData?.is_rebecca || hasUsage)) {
         const formatted = statsList.map((item) => {
-          const d = new Date(item.period_start);
-          const bytes = item.total_traffic || 0;
+          const d = new Date(
+            userData?.is_rebecca ? item.timestamp : item.period_start
+          );
+          const bytes = userData?.is_rebecca
+            ? item.usedTraffic
+            : item.total_traffic || 0;
           const fb = formatBytes(bytes, t);
           return {
             date: d.toISOString().split("T")[0],
@@ -276,7 +290,11 @@ const UsageChart = ({ userData }) => {
   }, [period]);
 
   // If user is from legacy API that doesn't support usage chart endpoint, don't render
-  if (userData && userData.supports_usage_chart === false) {
+  if (
+    userData &&
+    (userData.supports_usage_chart === false ||
+      (userData.is_rebecca && !error && !data.length))
+  ) {
     return null;
   }
 

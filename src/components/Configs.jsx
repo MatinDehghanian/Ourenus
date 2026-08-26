@@ -4,6 +4,7 @@ import {
   AccordionSummary,
   Button,
   Grid,
+  IconButton,
   List,
   ListItem,
   Typography,
@@ -18,25 +19,34 @@ import {
 } from "../utils/Helper";
 import QrCodeIcon from "@mui/icons-material/QrCode";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import DownloadIcon from "@mui/icons-material/Download";
 import { useTranslation } from "react-i18next";
 import QrModal from "./QrModal";
+
+const protocolLogos = {
+  OpenVPN: "https://cdn.simpleicons.org/openvpn/EA7E20",
+  WireGuard: "https://cdn.simpleicons.org/wireguard/88171A",
+  "Cisco AnyConnect": "https://cdn.simpleicons.org/cisco/1BA0D7",
+};
 
 const Configs = ({
   title,
   icon,
   style,
   configs,
+  profiles,
   iconColor,
   btnStyle,
   liStyle,
   isFirst,
 }) => {
   const filteredLinks = useMemo(() => {
+    const profileLinks = new Set(profiles.map((profile) => profile.qrValue));
     if (configs && configs[configs.length - 1] === "False") {
-      return configs.slice(0, -1);
+      return configs.slice(0, -1).filter((link) => !profileLinks.has(link));
     }
-    return configs || [];
-  }, [configs]);
+    return (configs || []).filter((link) => !profileLinks.has(link));
+  }, [configs, profiles]);
 
   const { t } = useTranslation();
   const theme = useTheme();
@@ -55,6 +65,10 @@ const Configs = ({
   const handleClose = () => setOpen(false);
 
   const isFirstPadding = isFirst && { paddingTop: "1rem" };
+  const copyValues = [
+    ...filteredLinks,
+    ...profiles.map((profile) => profile.details || profile.qrValue).filter(Boolean),
+  ];
 
   return (
     <>
@@ -131,10 +145,103 @@ const Configs = ({
                   </ListItem>
                 );
               })}
+              {profiles.map((profile, index) => (
+                <ListItem key={`${profile.protocol}-${profile.name}-${index}`} sx={liStyle}>
+                  <Grid
+                    item
+                    component={profile.details ? "details" : "div"}
+                    sx={{ width: "100%" }}
+                  >
+                    <Grid
+                      container
+                      component={profile.details ? "summary" : "div"}
+                      justifyContent="space-between"
+                      alignItems="center"
+                      flexWrap="nowrap"
+                      gap=".5rem"
+                      sx={profile.details ? { cursor: "pointer", listStyle: "none" } : undefined}
+                    >
+                      <Grid item display="flex" alignItems="center" gap=".6rem" sx={{ minWidth: 0 }}>
+                        {protocolLogos[profile.protocol] && (
+                          <img
+                            src={protocolLogos[profile.protocol]}
+                            alt={`${profile.protocol} logo`}
+                            width="28"
+                            height="28"
+                          />
+                        )}
+                        <Grid item sx={{ minWidth: 0 }}>
+                          <Typography>{profile.name}</Typography>
+                          {!profile.details && (
+                            <Typography variant="caption" display="block">
+                              {profile.protocol}
+                            </Typography>
+                          )}
+                        </Grid>
+                      </Grid>
+                      <Grid item display="flex" gap=".5rem">
+                        {profile.downloadUrl && (
+                          <IconButton
+                            component="a"
+                            href={profile.downloadUrl}
+                            aria-label={t("download")}
+                            sx={{ ...btnStyle, color: "inherit" }}
+                          >
+                            <DownloadIcon fontSize="large" />
+                          </IconButton>
+                        )}
+                        {profile.qrValue && (
+                          <IconButton
+                            aria-label="QR"
+                            onClick={() =>
+                              handleOpen(profile.name, profile.qrValue, index)
+                            }
+                            sx={btnStyle}
+                          >
+                            <QrCodeIcon fontSize="large" />
+                          </IconButton>
+                        )}
+                        {(profile.details || profile.qrValue) && (
+                          <IconButton
+                            aria-label="Copy"
+                            sx={btnStyle}
+                            onClick={(event) => {
+                              event.preventDefault();
+                              event.stopPropagation();
+                              handleCopyToClipboard(
+                                profile.details || profile.qrValue,
+                                index,
+                                t
+                              );
+                            }}
+                          >
+                            <ContentCopyIcon fontSize="large" />
+                          </IconButton>
+                        )}
+                      </Grid>
+                    </Grid>
+                    {profile.details && (
+                      <Typography
+                        component="pre"
+                        variant="caption"
+                        sx={{
+                          borderTop: "1px solid rgba(255, 255, 255, 0.2)",
+                          margin: ".6rem 0 0",
+                          paddingTop: ".6rem",
+                          whiteSpace: "pre-wrap",
+                          overflowWrap: "anywhere",
+                        }}
+                      >
+                        {profile.details}
+                      </Typography>
+                    )}
+                  </Grid>
+                </ListItem>
+              ))}
             </List>
             <Button
               onClick={() =>
-                handleCopyToClipboard(filteredLinks.join("\n"), -1, t)
+                handleCopyToClipboard(copyValues.join("\n"), -1, t)
               }
               sx={{
                 width: "100%",
@@ -170,9 +277,22 @@ Configs.propTypes = {
   icon: PropTypes.element.isRequired,
   style: PropTypes.object,
   configs: PropTypes.arrayOf(PropTypes.string).isRequired,
+  profiles: PropTypes.arrayOf(
+    PropTypes.shape({
+      protocol: PropTypes.string.isRequired,
+      name: PropTypes.string.isRequired,
+      downloadUrl: PropTypes.string,
+      qrValue: PropTypes.string,
+      details: PropTypes.string,
+    })
+  ),
   iconColor: PropTypes.string,
   liStyle: PropTypes.object,
   isFirst: PropTypes.bool,
+};
+
+Configs.defaultProps = {
+  profiles: [],
 };
 
 export default Configs;
